@@ -6,3 +6,15 @@
 .logo {
     padding: 20px 30px;
 }
+:root {
+    --transition-time: 0.4s;
+  }
+  
+  body {
+    transition: background-color var(--transition-time) ease, color var(--transition-time) ease;
+  }
+  
+  .ant-layout, .ant-layout-header, .ant-layout-footer, .ant-layout-content, .ant-menu {
+    transition: background-color var(--transition-time) ease, color var(--transition-time) ease;
+  }
+  
