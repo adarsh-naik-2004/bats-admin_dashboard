@@ -77,7 +77,7 @@ const Users = () => {
 
     const [drawerOpen, setDrawerOpen] = React.useState(false);
 
-    // Delete mutation
+
     const { mutate: deleteUserMutation } = useMutation({
         mutationKey: ['delete-user'],
         mutationFn: deleteUser,

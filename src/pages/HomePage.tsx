@@ -19,7 +19,7 @@ import Graph from "../components/logos/GraphIcon";
 
 const { Title, Text } = Typography;
 
-// 📦 Cricket order list
+
 const list = [
   {
     OrderSummary: "SS Cricket Bat, SG Gloves",
@@ -58,7 +58,7 @@ const list = [
   },
 ];
 
-// 🎨 ColoredIcon component
+
 const ColoredIcon = ({
   IconComponent,
   bgColor,
@@ -86,28 +86,28 @@ const ColoredIcon = ({
   </div>
 );
 
-// 📌 CardTitle with dynamic colors
+
 interface CardTitleProps {
   title: string;
   PrefixIcon: ComponentType<unknown>;
 }
 
 const CardTitle = ({ title, PrefixIcon }: CardTitleProps) => {
-  let bgColor = "#f6ffed"; // default
-  let iconColor = "#52c41a"; // default green
+  let bgColor = "#f6ffed";
+  let iconColor = "#52c41a"; 
 
   if (title === "Total orders") {
-    bgColor = "#e6f7ff"; // light blue
-    iconColor = "#1890ff"; // blue
+    bgColor = "#e6f7ff"; 
+    iconColor = "#1890ff";
   } else if (title === "Total sale") {
-    bgColor = "#fff1f0"; // light red
-    iconColor = "#f5222d"; // red
+    bgColor = "#fff1f0";
+    iconColor = "#f5222d"; 
   } else if (title === "Sales") {
-    bgColor = "#f9f0ff"; // light purple
-    iconColor = "#722ed1"; // purple
+    bgColor = "#f9f0ff";
+    iconColor = "#722ed1"; 
   } else if (title === "Recent orders") {
-    bgColor = "#fff7e6"; // light orange
-    iconColor = "#fa8c16"; // orange
+    bgColor = "#fff7e6"; 
+    iconColor = "#fa8c16"; 
   }
 
   return (
@@ -122,7 +122,7 @@ const CardTitle = ({ title, PrefixIcon }: CardTitleProps) => {
   );
 };
 
-// 🏠 HomePage Component
+
 function HomePage() {
   const { user } = useAuthStore();
   return (

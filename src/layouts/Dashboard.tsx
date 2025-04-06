@@ -12,7 +12,7 @@ import OrdersIcon from "../components/logos/OrdersIcon";
 import GiftIcon from "../components/logos/GiftIcon";
 import UsersIcon from "../components/logos/UsersIcon";
 import StoreIcon from "../components/logos/StoreIcon";
-import { useThemeStore } from "../store"; // Import the theme store
+import { useThemeStore } from "../store";
 
 const { Sider, Header, Content, Footer } = Layout;
 
@@ -105,7 +105,7 @@ const Dashboard = () => {
                                 checkedChildren={<MoonOutlined />}
                                 unCheckedChildren={<SunOutlined />}
                                 checked={darkMode}
-                                onChange={toggleDarkMode} // Toggle dark mode globally
+                                onChange={toggleDarkMode} 
                             />
                             <Badge dot={true}>
                                 <BellFilled />

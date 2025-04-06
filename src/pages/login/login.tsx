@@ -5,7 +5,7 @@ import { Credentials } from '../../types';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../store';
 import { usePermission } from '../../hooks/usePermission';
-import { useThemeStore } from '../../store'; // Import your theme store
+import { useThemeStore } from '../../store'; 
 
 const loginUser = async (credentials: Credentials) => {
   const { data } = await login(credentials);
@@ -56,7 +56,7 @@ const LoginPage = () => {
       height: '100vh', 
       display: 'grid', 
       placeItems: 'center',
-      backgroundColor: darkMode ? '#141414' : '#fff' // Add dark mode background
+      backgroundColor: darkMode ? '#141414' : '#fff' 
     }}>
       <Space direction="vertical" align="center" size="large">
         <Flex gap="middle" align="center" justify="end" style={{ width: '100%' }}>

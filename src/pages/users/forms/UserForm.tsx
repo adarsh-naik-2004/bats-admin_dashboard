@@ -9,7 +9,6 @@ const UserForm = ({ isEditMode = false }: { isEditMode: boolean }) => {
     const { data: stores } = useQuery({
         queryKey: ['stores'],
         queryFn: () => {
-            // TODO: make this dynamic, like search for stores in the input
             return getStores(`perPage=100&currentPage=1`).then((res) => res.data);
         },
     });

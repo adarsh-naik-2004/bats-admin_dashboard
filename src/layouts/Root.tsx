@@ -5,7 +5,7 @@ import { useAuthStore } from "../store";
 import { useEffect } from "react";
 import { AxiosError } from "axios";
 import { ConfigProvider, theme } from "antd";
-import { useThemeStore } from "../store"; // Import the global dark mode store
+import { useThemeStore } from "../store"; 
 
 const getSelf = async () => {
   const { data } = await self();
@@ -14,7 +14,7 @@ const getSelf = async () => {
 
 const Root = () => {
   const { setUser } = useAuthStore();
-  const { darkMode } = useThemeStore(); // Use global dark mode
+  const { darkMode } = useThemeStore(); 
 
   const { data, isLoading } = useQuery({
     queryKey: ["self"],
