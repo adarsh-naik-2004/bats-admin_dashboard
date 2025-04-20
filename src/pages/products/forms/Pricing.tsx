@@ -19,7 +19,7 @@ const Pricing = ({ selectedCategory }: PricingProps) => {
     if (!fetchedCategory) return null;
 
     return (
-        <Card title={<Typography.Text>Product price</Typography.Text>} bordered={false}>
+        <Card title={<Typography.Text>Product price</Typography.Text>} variant='borderless'>
             {Object.entries(fetchedCategory?.priceConfiguration).map(
                 ([configurationKey, configurationValue]) => {
                     return (

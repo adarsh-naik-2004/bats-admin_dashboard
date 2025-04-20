@@ -14,9 +14,9 @@ import UsersIcon from "../components/logos/UsersIcon";
 import StoreIcon from "../components/logos/StoreIcon";
 import { useThemeStore } from "../store";
 
-const { Sider, Header, Content, Footer } = Layout;
+const { Sider, Header, Content } = Layout;
 
-const getMenuItems = (role) => {
+const getMenuItems = (role: string) => {
     const menuMap = {
         home: {
             key: "/",
@@ -50,7 +50,7 @@ const getMenuItems = (role) => {
         },
     };
     
-    const allowedKeys = role === "admin" ? ["home", "users", "stores", "products", "promos"] : ["home", "products", "orders", "promos"];
+    const allowedKeys: (keyof typeof menuMap)[] = role === "admin" ? ["home", "users", "stores", "products", "promos"] : ["home", "products", "orders", "promos"];
     return allowedKeys.map((key) => menuMap[key]);
 };
 
@@ -116,7 +116,7 @@ const Dashboard = () => {
                                         {
                                             key: "logout",
                                             label: "Logout",
-                                            onClick: logoutMutate,
+                                            onClick: () => logoutMutate(),
                                         },
                                     ],
                                 }}
