@@ -7,6 +7,9 @@ import { getOrders } from '../../http/api';
 import { format } from 'date-fns';
 import { colorMapping } from '../../constants';
 import { capitalizeFirst } from '../products/helpers';
+import React from 'react';
+import socket from '../../lib/socket';
+import { useAuthStore } from '../../store';
 
 const columns = [
     {
@@ -96,6 +99,31 @@ const columns = [
 const STORE_ID = 10;
 
 const Orders = () => {
+
+    const { user } = useAuthStore();
+
+    React.useEffect(() => {
+        if (user?.store) {
+            socket.on('order-update', (data) => {
+                console.log('data received: ', data);
+            });
+
+            socket.on('join', (data) => {
+                console.log('User joined in: ', data.roomId);
+            });
+
+            socket.emit('join', {
+                storeId: user.store.id,
+            });
+        }
+
+        return () => {
+            socket.off('join');
+            socket.off('order-update');
+        };
+    }, []);
+
+
     const { data: orders } = useQuery({
         queryKey: ['orders'],
         queryFn: () => {
