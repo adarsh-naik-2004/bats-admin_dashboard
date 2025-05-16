@@ -11,6 +11,8 @@ import {
     Tag,
     theme,
     Typography,
+    Modal,
+    message
 } from 'antd';
 import { RightOutlined, PlusOutlined, LoadingOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
@@ -19,7 +21,7 @@ import { FieldData, Product } from '../../types';
 import React from 'react';
 import { PER_PAGE } from '../../constants';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createProduct, getProducts, updateProduct } from '../../http/api';
+import { createProduct, getProducts, updateProduct, deleteProduct } from '../../http/api';
 import { format } from 'date-fns';
 import { debounce} from 'lodash';
 import { useAuthStore } from '../../store';
@@ -74,11 +76,13 @@ const columns = [
 ];
 
 const Products = () => {
+    const [modal, contextHolderModal] = Modal.useModal();
+    const [messageApi, contextHolder] = message.useMessage();
+
     const [filterForm] = Form.useForm();
     const [form] = Form.useForm();
 
     const [selectedProduct, setCurrentProduct] = React.useState<Product | null>(null);
-
     React.useEffect(() => {
         if (selectedProduct) {
             setDrawerOpen(true);
@@ -187,6 +191,9 @@ const Products = () => {
         },
     });
 
+
+    
+
     const onHandleSubmit = async () => {
 
         await form.validateFields();
@@ -226,8 +233,42 @@ const Products = () => {
         await productMutate(formData);
     };
 
+    const { mutate: deleteProductMutation } = useMutation({
+        mutationKey: ['deleteProduct'],
+        mutationFn: (productId: string) => deleteProduct(productId).then((res) => res.data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['products'] });
+            messageApi.success('Product deleted successfully');
+        },
+        onError: (error: Error) => {
+            messageApi.error(`Delete failed: ${error.message}`);
+        },
+    });
+
+    const handleDelete = (productId: string) => {
+        modal.confirm({
+            title: 'Delete Product?',
+            content: 'This action cannot be undone',
+            okText: 'Delete',
+            okType: 'danger',
+            cancelText: 'Cancel',
+            onOk: async () => {
+                try {
+                    await deleteProductMutation(productId);
+                    messageApi.success('Product deleted');
+                } catch (err) {
+                    console.error(err);
+                    messageApi.error('Delete failed');
+                }
+            },
+        });
+    };
+
+
     return (
         <>
+            {contextHolderModal}
+            {contextHolder}
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
                 <Flex justify="space-between">
                     <Breadcrumb
@@ -269,13 +310,22 @@ const Products = () => {
                                             }}>
                                             Edit
                                         </Button>
+                                        {user?.role === 'admin' && (
+                                            <Button
+                                                type="link"
+                                                danger
+                                                onClick={() => handleDelete(record._id)}
+                                            >
+                                                Delete
+                                            </Button>
+                                        )}
                                     </Space>
                                 );
                             },
                         },
                     ]}
                     dataSource={products?.data}
-                    rowKey={'id'}
+                    rowKey={'_id'}
                     pagination={{
                         total: products?.total,
                         pageSize: queryParams.limit,

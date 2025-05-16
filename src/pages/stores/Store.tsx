@@ -88,6 +88,14 @@ const Stores = () => {
         setDrawerOpen(false);
     };
 
+    
+
+    if (user?.role !== 'admin') {
+        return <Navigate to="/" replace={true} />;
+    }
+
+
+
     const columns = [
         {
             title: 'ID',
@@ -120,9 +128,7 @@ const Stores = () => {
         },
     ];
 
-    if (user?.role !== 'admin') {
-        return <Navigate to="/" replace={true} />;
-    }
+
 
     return (
         <>
@@ -201,7 +207,7 @@ const Stores = () => {
                         <StoreForm isEditMode={!!currentEditingStore} />
                     </Form>
                 </Drawer>
-            </Space>
+                </Space>
         </>
     );
 };

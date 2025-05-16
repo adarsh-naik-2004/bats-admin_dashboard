@@ -20,6 +20,7 @@ export const deleteUser = (id: number) => api.delete(`${AUTH_SERVICE}/users/${id
 export const getCategories = () => api.get(`${CATALOG_SERVICE}/categories`);
 export const getProducts = (queryParam: string) => api.get(`${CATALOG_SERVICE}/products?${queryParam}`);
 export const createProduct = (product: FormData) => api.post(`${CATALOG_SERVICE}/products`, product, { headers: { 'Content-Type': 'multipart/form-data' }, });
+export const deleteProduct = (id: string) => api.delete(`${CATALOG_SERVICE}/products/${id}`);
 export const getCategory = (id: string) => api.get(`${CATALOG_SERVICE}/categories/${id}`);
 export const updateProduct = (product: FormData, id: string) => {
     return api.put(`${CATALOG_SERVICE}/products/${id}`, product, {
