@@ -1,9 +1,9 @@
 import axios from "axios";
 import { useAuthStore } from "../store";
-import { AUTH_SERVICE } from "./api";
+import type { AxiosInstance } from "axios";
 
-export const api = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_API_URL,
+export const authApi = axios.create({
+  baseURL: import.meta.env.AUTH_API,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -11,29 +11,51 @@ export const api = axios.create({
   },
 });
 
+export const collectionApi = axios.create({
+  baseURL: import.meta.env.COLLECTION_API,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
+});
+
+export const orderApi = axios.create({
+  baseURL: import.meta.env.ORDER_API,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
+});
 
 const refreshToken = async () => {
-  await axios.post(
-      `${import.meta.env.VITE_BACKEND_API_URL}${AUTH_SERVICE}/auth/refresh`, {}, { withCredentials: true }
-  );
+  await authApi.post('/auth/refresh', {});
 };
 
 
-api.interceptors.response.use((response) => response, async (error) => {
+const addInterceptors = (apiInstance: AxiosInstance) => {
+  apiInstance.interceptors.response.use(
+    (response) => response,
+    async (error) => {
       const originalRequest = error.config;
 
-      if (error.response.status === 401 && !originalRequest.again) {
-          try {
-              originalRequest.again = true;
-              const headers = { ...originalRequest.headers };
-              await refreshToken();
-              return api.request({ ...originalRequest, headers });
-          } catch (error) {
-              console.error('Token refresh error', error);
-              useAuthStore.getState().logout();
-              return Promise.reject(error);
-          }
+      if (error.response?.status === 401 && !originalRequest._retry) {
+        try {
+          originalRequest._retry = true;
+          await refreshToken();
+          return apiInstance.request(originalRequest);
+        } catch (refreshError) {
+          console.error('Token refresh error', refreshError);
+          useAuthStore.getState().logout();
+          return Promise.reject(refreshError);
+        }
       }
       return Promise.reject(error);
-  }
-);
+    }
+  );
+};
+
+addInterceptors(authApi);
+addInterceptors(collectionApi);
+addInterceptors(orderApi);
