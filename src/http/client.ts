@@ -30,9 +30,14 @@ export const orderApi = axios.create({
 });
 
 const refreshToken = async () => {
-  await authApi.post('/auth/refresh', {});
+    await axios.post(
+        `${import.meta.env.VITE_AUTH_API}/auth/refresh`,
+        {},
+        {
+            withCredentials: true,
+        }
+    );
 };
-
 
 const addInterceptors = (apiInstance: AxiosInstance) => {
   apiInstance.interceptors.response.use(
