@@ -3,7 +3,7 @@ import { useAuthStore } from "../store";
 import type { AxiosInstance } from "axios";
 
 export const authApi = axios.create({
-  baseURL: import.meta.env.AUTH_API,
+  baseURL: import.meta.env.VITE_AUTH_API,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -12,7 +12,7 @@ export const authApi = axios.create({
 });
 
 export const collectionApi = axios.create({
-  baseURL: import.meta.env.COLLECTION_API,
+  baseURL: import.meta.env.VITE_COLLECTION_API,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -21,7 +21,7 @@ export const collectionApi = axios.create({
 });
 
 export const orderApi = axios.create({
-  baseURL: import.meta.env.ORDER_API,
+  baseURL: import.meta.env.VITE_ORDER_API,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
