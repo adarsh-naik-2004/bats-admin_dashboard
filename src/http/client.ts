@@ -14,6 +14,7 @@ export const authApi = axios.create({
 export const collectionApi = axios.create({
   baseURL: import.meta.env.VITE_COLLECTION_API,
   withCredentials: true,
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
