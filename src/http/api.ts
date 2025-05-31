@@ -1,4 +1,3 @@
-import axios from "axios";
 import { CreateStoreData, CreateUserData, Credentials, OrderStatus } from "../types";
 import { authApi, collectionApi, orderApi } from "./client";
 
@@ -17,22 +16,8 @@ export const deleteUser = (id: number) => authApi.delete(`/users/${id}`);
 // Collection Service APIs
 export const getCategories = () => collectionApi.get('/categories');
 export const getProducts = (queryParam: string) => collectionApi.get(`/products?${queryParam}`);
-export const createProduct = async (product: FormData) => {
-  try {
-    const response = await axios.post(
-      `${import.meta.env.VITE_COLLECTION_API}/products`,
-      product,
-      {
-        withCredentials: true,
-        timeout: 60000,
-      }
-    );
-    return response;
-  } catch (error) {
-    console.error('Create product error:', error);
-    throw error;
-  }
-};
+export const createProduct = (product: FormData) => 
+  collectionApi.post('/products', product, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const deleteProduct = (id: string) => collectionApi.delete(`/products/${id}`);
 export const getCategory = (id: string) => collectionApi.get(`/categories/${id}`);
 export const updateProduct = (product: FormData, id: string) => 
