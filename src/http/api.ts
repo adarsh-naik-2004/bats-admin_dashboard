@@ -16,8 +16,9 @@ export const deleteUser = (id: number) => authApi.delete(`/users/${id}`);
 // Collection Service APIs
 export const getCategories = () => collectionApi.get('/categories');
 export const getProducts = (queryParam: string) => collectionApi.get(`/products?${queryParam}`);
-export const createProduct = (product: FormData) => 
-  collectionApi.post('/products', product, { headers: { 'Content-Type': 'multipart/form-data' } });
+
+export const createProduct = (product: FormData) => collectionApi.post('/products', product, { withCredentials: true });
+
 export const deleteProduct = (id: string) => collectionApi.delete(`/products/${id}`);
 export const getCategory = (id: string) => collectionApi.get(`/categories/${id}`);
 export const updateProduct = (product: FormData, id: string) => 
