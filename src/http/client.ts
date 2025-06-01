@@ -11,7 +11,9 @@ export const api = axios.create({
 });
 
 const refreshToken = async () => {
-  await api.post('/auth/refresh', {});
+  await api.post('/auth/refresh', {}, {
+            withCredentials: true,
+        });
 };
 
 const addInterceptors = (apiInstance: AxiosInstance) => {
