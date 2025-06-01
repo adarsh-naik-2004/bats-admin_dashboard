@@ -16,12 +16,12 @@ export const deleteUser = (id: number) => api.delete(`/users/${id}`);
 export const getCategories = () => api.get('/categories');
 export const getProducts = (queryParam: string) => api.get(`/products?${queryParam}`);
 
-export const createProduct = (product: FormData) => api.post('/products', product, { withCredentials: true });
+export const createProduct = (product: FormData) => api.post('/products', product);
 
 export const deleteProduct = (id: string) => api.delete(`/products/${id}`);
 export const getCategory = (id: string) => api.get(`/categories/${id}`);
-export const updateProduct = (product: FormData, id: string) => 
-  api.put(`/products/${id}`, product, { headers: { 'Content-Type': 'multipart/form-data' } });
+
+export const updateProduct = (product: FormData, id: string) => api.put(`/products/${id}`, product);
 
 // Order Service APIs
 export const getOrders = (queryString: string) => api.get(`/orders?${queryString}`);

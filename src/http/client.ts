@@ -6,7 +6,6 @@ export const api = axios.create({
   baseURL: import.meta.env.VITE_API_GATEWAY,
   withCredentials: true,
   headers: {
-    "Content-Type": "application/json",
     Accept: "application/json",
   },
 });
