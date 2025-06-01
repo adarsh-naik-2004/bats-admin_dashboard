@@ -21,8 +21,12 @@ const addInterceptors = (apiInstance: AxiosInstance) => {
     (response) => response,
     async (error) => {
       const originalRequest = error.config;
+
+      const authStore = useAuthStore.getState();
       
-      if (error.response?.status === 401 && !originalRequest._retry) {
+      const isAuthenticated = authStore.isAuthenticated;
+
+      if (error.response?.status === 401 && !originalRequest._retry && isAuthenticated) {
         try {
           originalRequest._retry = true;
           await refreshToken();

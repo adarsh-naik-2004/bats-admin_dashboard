@@ -20,11 +20,15 @@ interface AuthState {
     user: null | User;
     setUser: (user: User) => void;
     logout: () => void;
+    isAuthenticated: boolean; // Add this computed property
 }
 
 export const useAuthStore = create<AuthState>()(
-    devtools((set) => ({
+    devtools((set, get) => ({
         user: null,
+        get isAuthenticated() {
+            return get().user !== null;
+        },
         setUser: (user) => set({ user }),
         logout: () => set({ user: null }),
     }))
