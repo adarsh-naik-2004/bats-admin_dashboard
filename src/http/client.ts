@@ -2,26 +2,8 @@ import axios from "axios";
 import { useAuthStore } from "../store";
 import type { AxiosInstance } from "axios";
 
-export const authApi = axios.create({
-  baseURL: import.meta.env.VITE_AUTH_API,
-  withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-  },
-});
-
-export const collectionApi = axios.create({
-  baseURL: import.meta.env.VITE_COLLECTION_API,
-  withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-  },
-});
-
-export const orderApi = axios.create({
-  baseURL: import.meta.env.VITE_ORDER_API,
+export const api = axios.create({
+  baseURL: import.meta.env.VITE_API_GATEWAY,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -30,13 +12,7 @@ export const orderApi = axios.create({
 });
 
 const refreshToken = async () => {
-    await axios.post(
-        `${import.meta.env.VITE_AUTH_API}/auth/refresh`,
-        {},
-        {
-            withCredentials: true,
-        }
-    );
+  await api.post('/auth/refresh', {});
 };
 
 const addInterceptors = (apiInstance: AxiosInstance) => {
@@ -44,7 +20,7 @@ const addInterceptors = (apiInstance: AxiosInstance) => {
     (response) => response,
     async (error) => {
       const originalRequest = error.config;
-
+      
       if (error.response?.status === 401 && !originalRequest._retry) {
         try {
           originalRequest._retry = true;
@@ -61,6 +37,4 @@ const addInterceptors = (apiInstance: AxiosInstance) => {
   );
 };
 
-addInterceptors(authApi);
-addInterceptors(collectionApi);
-addInterceptors(orderApi);
+addInterceptors(api);
