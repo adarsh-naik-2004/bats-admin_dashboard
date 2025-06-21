@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { 
   Button,
   Card,
@@ -106,18 +106,19 @@ function HomePage() {
           params.storeId = user.store.id;
         }
 
+        // Convert all values to string before passing to URLSearchParams
         const stringParams: Record<string, string> = Object.fromEntries(
           Object.entries(params).map(([key, value]) => [key, String(value)])
         );
-
         const queryString = new URLSearchParams(stringParams).toString();
         const response = await getOrders(queryString);
         
-        setRecentOrders(response.data.data);
-        setTotalOrders(response.data.total);
+        setRecentOrders(response.data.data || []);
+        setTotalOrders(response.data.total || 0);
         
-        const salesTotal = response.data.data.reduce(
-          (sum: number, order: Order) => sum + order.total, 0
+        // Calculate total sales from orders
+        const salesTotal = (response.data.data || []).reduce(
+          (sum: number, order: Order) => sum + (order.total || 0), 0
         );
         setTotalSales(salesTotal);
       } catch (error) {
@@ -130,23 +131,10 @@ function HomePage() {
     fetchDashboardData();
   }, [user]);
 
-
+  // Helper function to capitalize first letter
   const capitalizeFirst = (str: string): string => {
     if (!str) return '';
     return str.charAt(0).toUpperCase() + str.slice(1);
-  };
-
-  const getOrderSummary = (order: Order) => {
-    if (!order.cart || order.cart.length === 0) return "No items";
-    
-    const items = order.cart.slice(0, 2);
-    const itemNames = items.map(item => item.name || "Cricket Item");
-    
-    if (order.cart.length > 2) {
-      return `${itemNames.join(", ")} +${order.cart.length - 2} more`;
-    }
-    
-    return itemNames.join(", ");
   };
 
   return (
@@ -234,38 +222,42 @@ function HomePage() {
                   loading={false}
                   itemLayout="horizontal"
                   dataSource={recentOrders}
-                  renderItem={(order) => (
-                    <List.Item>
-                      <List.Item.Meta
-                        title={
-                          <Link to={`/orders/${order._id}`}>
-                            Order #{order._id.slice(-6).toUpperCase()}
-                          </Link>
-                        }
-                        description={
-                          <Space direction="vertical" size={2}>
-                            <Text>{getOrderSummary(order)}</Text>
-                            <Text type="secondary">
-                              {format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm')}
-                            </Text>
-                            <Text>{order.address}</Text>
-                          </Space>
-                        }
-                      />
-                      <Row style={{ flex: 1 }} justify="space-between">
-                        <Col>
-                          <Text strong>₹{order.total.toFixed(2)}</Text>
-                        </Col>
-                        <Col>
-                          <Tag
-                            color={colorMapping[order.orderStatus] || "default"}
-                          >
-                            {capitalizeFirst(order.orderStatus)}
-                          </Tag>
-                        </Col>
-                      </Row>
-                    </List.Item>
-                  )}
+                  renderItem={(order) => {
+                    const orderId = order._id ? `Order #${order._id.slice(-6).toUpperCase()}` : "Order";
+                    const orderTotal = order.total ? `₹${order.total.toFixed(2)}` : "₹0.00";
+                    const createdAt = order.createdAt 
+                      ? format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm') 
+                      : "Unknown date";
+                    const status = order.orderStatus || "unknown";
+                    
+                    return (
+                      <List.Item>
+                        <List.Item.Meta
+                          title={
+                            <Link to={`/orders/${order._id || ''}`}>
+                              {orderId}
+                            </Link>
+                          }
+                          description={
+                            <Space direction="vertical" size={2}>
+                              <Text>{order.address || "No address"}</Text>
+                              <Text type="secondary">{createdAt}</Text>
+                            </Space>
+                          }
+                        />
+                        <Row style={{ flex: 1 }} justify="space-between">
+                          <Col>
+                            <Text strong>{orderTotal}</Text>
+                          </Col>
+                          <Col>
+                            <Tag color={colorMapping[status] || "default"}>
+                              {capitalizeFirst(status)}
+                            </Tag>
+                          </Col>
+                        </Row>
+                      </List.Item>
+                    );
+                  }}
                 />
                 <div style={{ marginTop: 20 }}>
                   <Button type="link">
