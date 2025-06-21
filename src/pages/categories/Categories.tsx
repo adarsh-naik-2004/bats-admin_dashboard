@@ -25,10 +25,16 @@ export default function Categories() {
   };
 
   const handleSubmit = async (values: Category) => {
+    const payload = {
+      ...values,
+      priceConfiguration: values.priceConfiguration || {},
+      attributes: values.attributes || []
+    };
+
     if (editingCategory) {
-      await updateCategory(values, editingCategory._id!);
+      await updateCategory(payload, editingCategory._id!);
     } else {
-      await createCategory(values);
+      await createCategory(payload);
     }
     closeModal();
     loadCategories();
@@ -41,7 +47,11 @@ export default function Categories() {
 
   const openEditModal = (category: Category) => {
     setEditingCategory(category);
-    form.setFieldsValue(category);
+    form.setFieldsValue({
+      name: category.name,
+      priceConfiguration: category.priceConfiguration,
+      attributes: category.attributes
+    });
     setIsModalOpen(true);
   };
 
@@ -88,7 +98,15 @@ export default function Categories() {
         onCancel={closeModal}
         onOk={() => form.submit()}
       >
-        <Form form={form} layout="vertical" onFinish={handleSubmit}>
+        <Form 
+          form={form} 
+          layout="vertical" 
+          onFinish={handleSubmit}
+          initialValues={{
+            priceConfiguration: {},
+            attributes: []
+          }}
+        >
           <Form.Item
             label="Name"
             name="name"
@@ -97,7 +115,14 @@ export default function Categories() {
             <Input placeholder="e.g., Cricket Bats, Protective Gear" />
           </Form.Item>
           
-          {/* Add Price Configuration and Attributes fields here */}
+          {/* Hidden fields for required properties */}
+          <Form.Item name="priceConfiguration" hidden>
+            <Input />
+          </Form.Item>
+          <Form.Item name="attributes" hidden>
+            <Input />
+          </Form.Item>
+          
           <Form.Item>
             <Button type="primary" htmlType="submit">
               {editingCategory ? "Update" : "Create"}
