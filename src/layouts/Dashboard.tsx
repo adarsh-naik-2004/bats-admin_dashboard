@@ -12,6 +12,7 @@ import OrdersIcon from "../components/logos/OrdersIcon";
 import GiftIcon from "../components/logos/GiftIcon";
 import UsersIcon from "../components/logos/UsersIcon";
 import StoreIcon from "../components/logos/StoreIcon";
+import CategoriesIcon from "../components/logos/CategoriesIcon";
 import { useThemeStore } from "../store";
 
 const { Sider, Header, Content } = Layout;
@@ -48,9 +49,14 @@ const getMenuItems = (role: string) => {
             icon: <Icon component={StoreIcon} />,
             label: <NavLink to="/stores">Stores</NavLink>,
         },
+        categories: {
+            key: "/categories",
+            icon: <Icon component={CategoriesIcon} />,
+            label: <NavLink to="/categories">Categories</NavLink>,
+        },
     };
     
-    const allowedKeys: (keyof typeof menuMap)[] = role === "admin" ? ["home", "users", "stores", "products", "promos"] : ["home", "products", "orders", "promos"];
+    const allowedKeys: (keyof typeof menuMap)[] = role === "admin" ? ["home", "users", "stores", "categories", "products", "promos"] : ["home", "products", "orders", "promos"];
     return allowedKeys.map((key) => menuMap[key]);
 };
 

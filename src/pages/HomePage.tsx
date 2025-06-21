@@ -1,4 +1,5 @@
-import {
+import { useEffect, useState } from "react";
+import { 
   Button,
   Card,
   Col,
@@ -9,6 +10,8 @@ import {
   Statistic,
   Tag,
   Typography,
+  Empty,
+  Spin
 } from "antd";
 import Icon from "@ant-design/icons";
 import { Link } from "react-router-dom";
@@ -16,48 +19,12 @@ import { ComponentType } from "react";
 import Orders from "../components/logos/OrdersIcon";
 import { useAuthStore } from "../store";
 import Graph from "../components/logos/GraphIcon";
+import { getOrders } from "../http/api";
+import { Order } from "../types";
+import { format } from "date-fns";
+import { colorMapping } from "../constants";
 
 const { Title, Text } = Typography;
-
-
-const list = [
-  {
-    OrderSummary: "SS Cricket Bat, SG Gloves",
-    address: "Bandra, Mumbai",
-    amount: 3200,
-    status: "preparing",
-    loading: false,
-  },
-  {
-    OrderSummary: "Kookaburra Ball, SG Helmet",
-    address: "Balurghat, West Bengal",
-    amount: 4500,
-    status: "on the way",
-    loading: false,
-  },
-  {
-    OrderSummary: "MRF Bat, Puma Pads",
-    address: "Delhi, India",
-    amount: 7800,
-    status: "delivered",
-    loading: false,
-  },
-  {
-    OrderSummary: "Gray-Nicolls Bat, SG Gloves",
-    address: "Kolkata, West Bengal",
-    amount: 5200,
-    status: "preparing",
-    loading: false,
-  },
-  {
-    OrderSummary: "SS Ball, SG Helmet",
-    address: "Chennai, Tamil Nadu",
-    amount: 3000,
-    status: "on the way",
-    loading: false,
-  },
-];
-
 
 const ColoredIcon = ({
   IconComponent,
@@ -79,13 +46,9 @@ const ColoredIcon = ({
       justifyContent: "center",
     }}
   >
-    <Icon
-      component={IconComponent}
-      style={{ color: iconColor, fontSize: 16 }}
-    />
+    <Icon component={IconComponent} style={{ color: iconColor, fontSize: 16 }} />
   </div>
 );
-
 
 interface CardTitleProps {
   title: string;
@@ -122,12 +85,76 @@ const CardTitle = ({ title, PrefixIcon }: CardTitleProps) => {
   );
 };
 
-
 function HomePage() {
   const { user } = useAuthStore();
+  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [totalSales, setTotalSales] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        
+        const params: Record<string, string | number> = {
+          limit: 5,
+          sortBy: "createdAt:desc"
+        };
+        
+        if (user?.role === "manager" && user?.store?.id) {
+          params.storeId = user.store.id;
+        }
+
+        const stringParams: Record<string, string> = Object.fromEntries(
+          Object.entries(params).map(([key, value]) => [key, String(value)])
+        );
+
+        const queryString = new URLSearchParams(stringParams).toString();
+        const response = await getOrders(queryString);
+        
+        setRecentOrders(response.data.data);
+        setTotalOrders(response.data.total);
+        
+        const salesTotal = response.data.data.reduce(
+          (sum: number, order: Order) => sum + order.total, 0
+        );
+        setTotalSales(salesTotal);
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [user]);
+
+
+  const capitalizeFirst = (str: string): string => {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
+
+  const getOrderSummary = (order: Order) => {
+    if (!order.cart || order.cart.length === 0) return "No items";
+    
+    const items = order.cart.slice(0, 2);
+    const itemNames = items.map(item => item.name || "Cricket Item");
+    
+    if (order.cart.length > 2) {
+      return `${itemNames.join(", ")} +${order.cart.length - 2} more`;
+    }
+    
+    return itemNames.join(", ");
+  };
+
   return (
     <div>
-      <Title level={4}>Welcome, {user?.firstName} 🏏</Title>
+      <Title level={4}>
+        Welcome, {user?.firstName} {user?.role === "manager" && `(${user?.store?.name || "Your Store"})`} 🏏
+      </Title>
+      
       <Row className="mt-4" gutter={16}>
         <Col span={12}>
           <Row gutter={[16, 16]}>
@@ -136,71 +163,117 @@ function HomePage() {
                 title={<CardTitle title="Total orders" PrefixIcon={Orders} />}
                 variant="borderless"
               >
-                <Statistic value={52} />
+                {loading ? (
+                  <Skeleton.Input active size="small" />
+                ) : (
+                  <Statistic value={totalOrders} />
+                )}
               </Card>
             </Col>
+            
             <Col span={12}>
               <Card
                 title={<CardTitle title="Total sale" PrefixIcon={Graph} />}
                 variant="borderless"
               >
-                <Statistic value={70000} precision={2} prefix="₹" />
+                {loading ? (
+                  <Skeleton.Input active size="small" />
+                ) : (
+                  <Statistic 
+                    value={totalSales} 
+                    precision={2} 
+                    prefix="₹" 
+                  />
+                )}
               </Card>
             </Col>
+            
             <Col span={24}>
               <Card
-                title={<CardTitle title="Sales" PrefixIcon={Graph} />}
+                title={<CardTitle title="Sales Overview" PrefixIcon={Graph} />}
                 variant="borderless"
               >
-                {/* Graph content or component here */}
+                {loading ? (
+                  <Skeleton active paragraph={{ rows: 4 }} />
+                ) : recentOrders.length > 0 ? (
+                  <div style={{ height: 250 }}>
+                    <div style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      height: "100%",
+                      backgroundColor: "#f5f5f5",
+                      borderRadius: 8
+                    }}>
+                      <Typography.Text type="secondary">
+                        Sales chart would appear here
+                      </Typography.Text>
+                    </div>
+                  </div>
+                ) : (
+                  <Empty description="No sales data available" />
+                )}
               </Card>
             </Col>
           </Row>
         </Col>
+        
         <Col span={12}>
           <Card
             variant="borderless"
             title={<CardTitle title="Recent orders" PrefixIcon={Orders} />}
           >
-            <List
-              className="demo-loadmore-list"
-              loading={false}
-              itemLayout="horizontal"
-              dataSource={list}
-              renderItem={(item) => (
-                <List.Item>
-                  <Skeleton avatar title={false} loading={item.loading} active>
-                    <List.Item.Meta
-                      title={<a href="#">{item.OrderSummary}</a>}
-                      description={item.address}
-                    />
-                    <Row style={{ flex: 1 }} justify="space-between">
-                      <Col>
-                        <Text strong>₹{item.amount}</Text>
-                      </Col>
-                      <Col>
-                        <Tag
-                          color={
-                            item.status === "preparing"
-                              ? "volcano"
-                              : item.status === "on the way"
-                              ? "blue"
-                              : "green"
-                          }
-                        >
-                          {item.status}
-                        </Tag>
-                      </Col>
-                    </Row>
-                  </Skeleton>
-                </List.Item>
-              )}
-            />
-            <div style={{ marginTop: 20 }}>
-              <Button type="link">
-                <Link to="/orders">See all orders</Link>
-              </Button>
-            </div>
+            {loading ? (
+              <Spin tip="Loading orders..." />
+            ) : recentOrders.length === 0 ? (
+              <Empty description="No recent orders" />
+            ) : (
+              <>
+                <List
+                  className="demo-loadmore-list"
+                  loading={false}
+                  itemLayout="horizontal"
+                  dataSource={recentOrders}
+                  renderItem={(order) => (
+                    <List.Item>
+                      <List.Item.Meta
+                        title={
+                          <Link to={`/orders/${order._id}`}>
+                            Order #{order._id.slice(-6).toUpperCase()}
+                          </Link>
+                        }
+                        description={
+                          <Space direction="vertical" size={2}>
+                            <Text>{getOrderSummary(order)}</Text>
+                            <Text type="secondary">
+                              {format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm')}
+                            </Text>
+                            <Text>{order.address}</Text>
+                          </Space>
+                        }
+                      />
+                      <Row style={{ flex: 1 }} justify="space-between">
+                        <Col>
+                          <Text strong>₹{order.total.toFixed(2)}</Text>
+                        </Col>
+                        <Col>
+                          <Tag
+                            color={colorMapping[order.orderStatus] || "default"}
+                          >
+                            {capitalizeFirst(order.orderStatus)}
+                          </Tag>
+                        </Col>
+                      </Row>
+                    </List.Item>
+                  )}
+                />
+                <div style={{ marginTop: 20 }}>
+                  <Button type="link">
+                    <Link to="/orders">See all orders</Link>
+                  </Button>
+                </div>
+              </>
+            )}
           </Card>
         </Col>
       </Row>

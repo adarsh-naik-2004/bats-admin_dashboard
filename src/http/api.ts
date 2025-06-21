@@ -1,4 +1,4 @@
-import { CreateStoreData, CreateUserData, Credentials, OrderStatus } from "../types";
+import { CreateStoreData, CreateUserData, Credentials, OrderStatus, Category } from "../types";
 import { api } from "./client";
 // Auth Service APIs
 export const login = (credentials: Credentials) => api.post('/auth/login', credentials);
@@ -18,6 +18,14 @@ export const getProducts = (queryParam: string) => api.get(`/products?${queryPar
 
 export const createProduct = (product: FormData) => api.post('/products', product);
 
+export const createCategory = (category: Category) => 
+  api.post('/categories', category);
+
+export const updateCategory = (category: Category, id: string) => 
+  api.patch(`/categories/${id}`, category);
+
+export const deleteCategory = (id: string) => 
+  api.delete(`/categories/${id}`);
 export const deleteProduct = (id: string) => api.delete(`/products/${id}`);
 export const getCategory = (id: string) => api.get(`/categories/${id}`);
 

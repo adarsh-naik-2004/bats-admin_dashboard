@@ -148,3 +148,10 @@ export enum OrderEvents {
     PAYMENT_STATUS_UPDATE = 'PAYMENT_STATUS_UPDATE',
     ORDER_STATUS_UPDATE = 'ORDER_STATUS_UPDATE',
 }
+
+export interface Category {
+  _id: string;
+  name: string;
+  priceConfiguration: PriceConfiguration;
+  attributes: Attribute[];
+}
