@@ -9,7 +9,7 @@ import {
   reactivateCoupon,
   getStores
 } from "../../http/api";
-import { Coupon, CouponCreatePayload } from "../../types";
+import { Coupon, CouponCreatePayload, Store } from "../../types";
 import { ColumnsType } from "antd/es/table";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -25,7 +25,7 @@ const Promos = () => {
   const [storeFilter, setStoreFilter] = useState<string | undefined>(undefined);
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
 
-  const { data: coupons, isLoading } = useQuery({
+  const { data: couponsResponse, isLoading } = useQuery({
     queryKey: ['coupons', { storeId: storeFilter, status: statusFilter }],
     queryFn: () => 
       getCoupons(
@@ -33,11 +33,15 @@ const Promos = () => {
       )
   });
 
-  const { data: stores } = useQuery({
+  const { data: storesResponse } = useQuery({
     queryKey: ['stores'],
     queryFn: () => getStores(''),
     enabled: user?.role === 'admin'
   });
+
+  // Extract data from responses
+  const coupons: Coupon[] = couponsResponse?.data || [];
+  const stores: Store[] = storesResponse?.data || [];
 
   const createMutation = useMutation({
     mutationFn: (coupon: CouponCreatePayload) => createCoupon(coupon),
@@ -76,19 +80,19 @@ const Promos = () => {
       title: 'Discount', 
       dataIndex: 'discount', 
       key: 'discount',
-      render: value => `${value}%` 
+      render: (value: number) => `${value}%` 
     },
     { 
       title: 'Valid Until', 
       dataIndex: 'validUpto', 
       key: 'validUpto',
-      render: date => dayjs(date).format('MMM DD, YYYY') 
+      render: (date: Date) => dayjs(date).format('MMM DD, YYYY') 
     },
     { 
       title: 'Status', 
       dataIndex: 'isActive', 
       key: 'status',
-      render: isActive => (
+      render: (isActive: boolean) => (
         <Tag color={isActive ? 'green' : 'red'}>
           {isActive ? 'Active' : 'Inactive'}
         </Tag>
@@ -98,7 +102,7 @@ const Promos = () => {
       title: 'Store',
       dataIndex: 'storeId',
       key: 'storeId',
-      render: (storeId: string) => stores?.data?.find((s: { id: string }) => s.id === storeId)?.name || storeId
+      render: (storeId: string) => stores.find((store: Store) => String(store.id) === String(storeId))?.name || storeId
     }] : []),
     {
       title: 'Actions',
@@ -175,7 +179,7 @@ const Promos = () => {
             style={{ width: 200 }}
             allowClear
             onChange={(value: string | undefined) => setStoreFilter(value)}
-            options={stores?.data?.map((store: { id: string; name: string }) => ({
+            options={stores.map((store: Store) => ({
               value: store.id,
               label: store.name
             }))}
@@ -195,7 +199,7 @@ const Promos = () => {
 
       <Table 
         columns={columns} 
-        dataSource={coupons?.data} 
+        dataSource={coupons} 
         loading={isLoading}
         rowKey="id"
       />
@@ -253,7 +257,7 @@ const Promos = () => {
               rules={[{ required: true, message: 'Please select store' }]}
             >
               <Select
-                options={stores?.data?.map((store: { id: string; name: string }) => ({
+                options={stores.map((store: Store) => ({
                   value: store.id,
                   label: store.name
                 }))}
