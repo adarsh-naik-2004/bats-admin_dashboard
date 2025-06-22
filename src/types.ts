@@ -155,3 +155,23 @@ export interface Category {
   priceConfiguration: PriceConfiguration;
   attributes: Attribute[];
 }
+
+export interface Coupon {
+  id: string;
+  title: string;
+  code: string;
+  validUpto: Date;
+  storeId: number;
+  discount: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type CouponCreatePayload = {
+  title: string;
+  code: string;
+  validUpto: Date | string;
+  discount: number;
+  storeId?: number;
+};
