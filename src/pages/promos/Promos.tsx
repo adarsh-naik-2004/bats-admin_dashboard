@@ -22,7 +22,7 @@ const Promos = () => {
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
-  const [storeFilter, setStoreFilter] = useState<string | undefined>(undefined);
+  const [storeFilter, setStoreFilter] = useState<number | undefined>(undefined);
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
 
   const { data: couponsResponse, isLoading } = useQuery({
@@ -39,9 +39,14 @@ const Promos = () => {
     enabled: user?.role === 'admin'
   });
 
-  // Extract data from responses
-  const coupons: Coupon[] = couponsResponse?.data || [];
-  const stores: Store[] = storesResponse?.data || [];
+  // Extract data from responses - ensure we always have arrays
+  const coupons: Coupon[] = Array.isArray(couponsResponse?.data) 
+    ? couponsResponse.data 
+    : [];
+
+  const stores: Store[] = Array.isArray(storesResponse?.data) 
+    ? storesResponse.data 
+    : [];
 
   const createMutation = useMutation({
     mutationFn: (coupon: CouponCreatePayload) => createCoupon(coupon),
@@ -102,7 +107,10 @@ const Promos = () => {
       title: 'Store',
       dataIndex: 'storeId',
       key: 'storeId',
-      render: (storeId: string) => stores.find((store: Store) => String(store.id) === String(storeId))?.name || storeId
+      render: (storeId: number) => {
+        const store = stores.find(s => s.id === storeId);
+        return store ? store.name : storeId;
+      }
     }] : []),
     {
       title: 'Actions',
@@ -178,8 +186,8 @@ const Promos = () => {
             placeholder="Filter by store"
             style={{ width: 200 }}
             allowClear
-            onChange={(value: string | undefined) => setStoreFilter(value)}
-            options={stores.map((store: Store) => ({
+            onChange={(value: number | undefined) => setStoreFilter(value)}
+            options={stores.map(store => ({
               value: store.id,
               label: store.name
             }))}
@@ -257,7 +265,7 @@ const Promos = () => {
               rules={[{ required: true, message: 'Please select store' }]}
             >
               <Select
-                options={stores.map((store: Store) => ({
+                options={stores.map(store => ({
                   value: store.id,
                   label: store.name
                 }))}
