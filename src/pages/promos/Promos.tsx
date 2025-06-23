@@ -27,26 +27,28 @@ const Promos = () => {
 
   const { data: couponsResponse, isLoading } = useQuery({
     queryKey: ['coupons', { storeId: storeFilter, status: statusFilter }],
-    queryFn: () => 
-      getCoupons(
-        `storeId=${storeFilter || ''}&isActive=${statusFilter === 'active' ? 'true' : statusFilter === 'inactive' ? 'false' : ''}`
-      )
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (storeFilter !== undefined) {
+        params.append('storeId', storeFilter.toString());
+      }
+      if (statusFilter) {
+        params.append('isActive', statusFilter === 'active' ? 'true' : 'false');
+      }
+      return getCoupons(params.toString()).then(res => res.data);
+    }
   });
 
   const { data: storesResponse } = useQuery({
     queryKey: ['stores'],
-    queryFn: () => getStores(''),
+    queryFn: () => getStores('').then(res => res.data),
     enabled: user?.role === 'admin'
   });
 
-  // Extract data from responses - ensure we always have arrays
-  const coupons: Coupon[] = Array.isArray(couponsResponse?.data) 
-    ? couponsResponse.data 
-    : [];
 
-  const stores: Store[] = Array.isArray(storesResponse?.data) 
-    ? storesResponse.data 
-    : [];
+  const coupons: Coupon[] = couponsResponse?.data || [];
+  
+  const stores: Store[] = storesResponse?.data || [];
 
   const createMutation = useMutation({
     mutationFn: (coupon: CouponCreatePayload) => createCoupon(coupon),
