@@ -47,6 +47,7 @@ const Promos = () => {
 
 
   const coupons: Coupon[] = couponsResponse?.data || [];
+  const total = couponsResponse?.total || 0;
   
   const stores: Store[] = storesResponse?.data || [];
 
@@ -166,7 +167,10 @@ const Promos = () => {
       };
 
       if (editingCoupon) {
-        updateMutation.mutate({ id: editingCoupon.id, coupon: payload });
+        updateMutation.mutate({ 
+          id: editingCoupon.id, 
+          coupon: payload 
+        });
       } else {
         createMutation.mutate(payload);
       }
@@ -212,6 +216,10 @@ const Promos = () => {
         dataSource={coupons} 
         loading={isLoading}
         rowKey="id"
+        pagination={{
+          total: total,
+          showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
+        }}
       />
 
       <CustomModal
