@@ -79,7 +79,6 @@ const Dashboard = () => {
   });
 
   const [collapsed, setCollapsed] = useState(false);
-  const [isBelowLg, setIsBelowLg] = useState(false);
 
   const {
     token: { colorBgContainer, colorText },
@@ -110,35 +109,15 @@ const Dashboard = () => {
         onCollapse={setCollapsed}
         breakpoint="lg"
         collapsedWidth="0"
-        onBreakpoint={(broken) => {
-          setIsBelowLg(broken);
-        }}
-        style={
-          !collapsed && isBelowLg
-            ? {
-                position: "fixed",
-                zIndex: 1000,
-                height: "100vh",
-              }
-            : undefined
-        }
       >
         <Menu
           theme={darkMode ? "dark" : "light"}
           selectedKeys={[location.pathname]}
           mode="inline"
           items={items}
-          style={{
-            paddingTop: "20px", 
-          }}
         />
       </Sider>
-      <Layout
-        style={{
-          marginLeft: !collapsed && !isBelowLg ? 200 : 0,
-          transition: "margin-left 0.2s",
-        }}
-      >
+      <Layout>
         <Header
           style={{
             background: darkMode ? "#000000" : colorBgContainer,
@@ -146,9 +125,6 @@ const Dashboard = () => {
             padding: "0 16px",
             height: "auto",
             lineHeight: "normal",
-            position: "sticky",
-            top: 0,
-            zIndex: 999,
           }}
         >
           <Flex

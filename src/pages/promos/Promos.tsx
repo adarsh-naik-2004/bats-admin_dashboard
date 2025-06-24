@@ -86,27 +86,23 @@ const Promos = () => {
       title: 'Title', 
       dataIndex: 'title', 
       key: 'title',
-      responsive: ['sm'] 
     },
     { 
       title: 'Code', 
       dataIndex: 'code', 
       key: 'code',
-      responsive: ['sm'] 
     },
     { 
       title: 'Discount', 
       dataIndex: 'discount', 
       key: 'discount',
       render: (value: number) => `${value}%`,
-      responsive: ['md'] 
     },
     { 
       title: 'Valid Until', 
       dataIndex: 'validUpto', 
       key: 'validUpto',
       render: (date: Date) => dayjs(date).format('MMM DD, YYYY'),
-      responsive: ['lg'] 
     },
     { 
       title: 'Status', 
