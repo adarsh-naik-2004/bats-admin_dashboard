@@ -79,6 +79,7 @@ const Dashboard = () => {
   });
 
   const [collapsed, setCollapsed] = useState(false);
+  const [broken, setBroken] = useState(false);
 
   const {
     token: { colorBgContainer, colorText },
@@ -109,12 +110,18 @@ const Dashboard = () => {
         onCollapse={setCollapsed}
         breakpoint="lg"
         collapsedWidth="0"
+        onBreakpoint={(broken) => setBroken(broken)}
       >
         <Menu
           theme={darkMode ? "dark" : "light"}
           selectedKeys={[location.pathname]}
           mode="inline"
           items={items}
+          onClick={() => {
+            if (broken) {
+              setCollapsed(true);
+            }
+          }}
         />
       </Sider>
       <Layout>
