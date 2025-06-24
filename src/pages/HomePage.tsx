@@ -142,32 +142,26 @@ function HomePage() {
         setLoading(true);
         
         if (user?.role === "manager" && user?.store?.id) {
-          const orderParams: Record<string, string | number> = {
-            storeId: user.store.id,
-            limit: 5,
+          const orderParams = new URLSearchParams({
+            storeId: String(user.store.id),
+            limit: "5",
             sortBy: "createdAt:desc"
-          };
-
-          const orderQueryString = new URLSearchParams(
-            Object.fromEntries(
-              Object.entries(orderParams).map(([key, value]) => [key, String(value)])
-            )
-          ).toString();
+          });
 
           const allOrdersParams = new URLSearchParams({
             storeId: String(user.store.id),
-            limit: "0" 
-          }).toString();
+            limit: "0"
+          });
           
           const [orderResponse, allOrdersResponse] = await Promise.all([
-            getOrders(orderQueryString),
-            getOrders(allOrdersParams)
+            getOrders(orderParams.toString()),
+            getOrders(allOrdersParams.toString())
           ]);
 
-          setRecentOrders(orderResponse.data.data || []);
-          setTotalOrders(orderResponse.data.total || 0);
+          setRecentOrders(orderResponse.data?.data || []);
+          setTotalOrders(orderResponse.data?.total || 0);
           
-          const salesTotal = (allOrdersResponse.data.data || []).reduce(
+          const salesTotal = (allOrdersResponse.data?.data || []).reduce(
             (sum: number, order: Order) => sum + (order.total || 0), 0
           );
           setTotalSales(salesTotal);
