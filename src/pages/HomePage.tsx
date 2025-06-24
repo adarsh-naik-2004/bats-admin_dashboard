@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { 
   Button,
   Card,
@@ -18,7 +18,7 @@ import { ComponentType } from "react";
 import Orders from "../components/logos/OrdersIcon";
 import { useAuthStore } from "../store";
 import Graph from "../components/logos/GraphIcon";
-import { getOrders, getUsers, getStores } from "../http/api";
+import { getOrders, getUsers, getStores, getCategories, getProducts, getCoupons } from "../http/api";
 import { format } from "date-fns";
 import { colorMapping } from "../constants";
 import {Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
@@ -73,7 +73,14 @@ const CardTitle = ({ title, PrefixIcon }: CardTitleProps) => {
   } else if (title === "User Distribution") {
     bgColor = "#f0f5ff";
     iconColor = "#2f54eb";
-  } else if (title === "Stores Status") {
+  }
+  else if (title === "Total categories") {
+    bgColor = "#e6f7ff"; 
+    iconColor = "#1890ff";
+  } else if (title === "Total products") {
+    bgColor = "#fff7e6"; 
+    iconColor = "#fa8c16"; 
+  } else if (title === "Total promos") {
     bgColor = "#f6ffed";
     iconColor = "#52c41a";
   }
@@ -115,6 +122,26 @@ function HomePage() {
     store?: { id: string };
   }
 
+  interface Category {
+    _id: string;
+    name: string;
+  }
+
+  interface Product {
+    _id: string;
+    name: string;
+  }
+
+  interface ProductsResponse {
+    data: Product[];
+    total: number;
+  }
+
+  interface CouponsResponse {
+    data: unknown[];
+    total: number;
+  }
+
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [totalOrders, setTotalOrders] = useState(0);
   const [totalSales, setTotalSales] = useState(0);
@@ -125,16 +152,11 @@ function HomePage() {
     name?: string;
     address?: string;
   }
-  const [activeStores, setActiveStores] = useState(0);
   const [totalStores, setTotalStores] = useState(0);
+  const [totalCategories, setTotalCategories] = useState(0);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [totalPromos, setTotalPromos] = useState(0);
 
-  const storeStatusData = useMemo(() => {
-    if (totalStores === 0) return [];
-    return [
-      { name: 'Active', value: activeStores },
-      { name: 'Inactive', value: totalStores - activeStores }
-    ];
-  }, [activeStores, totalStores]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -168,29 +190,35 @@ function HomePage() {
         }
 
         if (user?.role === "admin") {
-          const userResponse = await getUsers("");
+          const [
+            userResponse, 
+            storesResponse, 
+            categoriesResponse,
+            productsResponse,
+            couponsResponse
+          ] = await Promise.all([
+            getUsers(""),
+            getStores(""),
+            getCategories(),
+            getProducts("limit=0"),
+            getCoupons("limit=0")
+          ]);
+
           const users = userResponse.data.data || [];
           const roleDistribution = aggregateData(users, 'role');
           setUserDistribution(formatChartData(roleDistribution));
           
-          const storesResponse = await getStores("");
           const stores: Store[] = storesResponse.data.data || [];
           setTotalStores(stores.length);
 
-          const activeCount = stores.filter(store => 
-            store.name && store.address
-          ).length;
-          setActiveStores(activeCount);
+          const categories: Category[] = categoriesResponse.data || [];
+          setTotalCategories(categories.length);
 
-          const allOrdersResponse = await getOrders("limit=0");
-          const allOrders: Order[] = allOrdersResponse.data.data || [];
-          
-          const ordersByStore: Record<string, number> = {};
-          allOrders.forEach(order => {
-            if (order.store?.id) {
-              ordersByStore[order.store.id] = (ordersByStore[order.store.id] || 0) + 1;
-            }
-          });
+          const productsData: ProductsResponse = productsResponse.data;
+          setTotalProducts(productsData.total || 0);
+
+          const couponsData: CouponsResponse = couponsResponse.data;
+          setTotalPromos(couponsData.total || 0);
         }
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
@@ -243,87 +271,81 @@ function HomePage() {
         )}
 
         {user?.role === "admin" && (
-          <Col xs={24} sm={12} md={8}>
-            <Card
-              title={<CardTitle title="Total stores" PrefixIcon={Graph} />}
-              variant="borderless"
-              loading={loading}
-            >
-              <Statistic value={totalStores} />
-            </Card>
-          </Col>
+          <>
+            <Col xs={24} sm={12} md={8} lg={6}>
+              <Card
+                title={<CardTitle title="Total stores" PrefixIcon={Graph} />}
+                variant="borderless"
+                loading={loading}
+              >
+                <Statistic value={totalStores} />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={8} lg={6}>
+              <Card
+                title={<CardTitle title="Total categories" PrefixIcon={Graph} />}
+                variant="borderless"
+                loading={loading}
+              >
+                <Statistic value={totalCategories} />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={8} lg={6}>
+              <Card
+                title={<CardTitle title="Total products" PrefixIcon={Graph} />}
+                variant="borderless"
+                loading={loading}
+              >
+                <Statistic value={totalProducts} />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={8} lg={6}>
+              <Card
+                title={<CardTitle title="Total promos" PrefixIcon={Graph} />}
+                variant="borderless"
+                loading={loading}
+              >
+                <Statistic value={totalPromos} />
+              </Card>
+            </Col>
+          </>
         )}
       </Row>
     
       <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
         {user?.role === "admin" && (
-          <>
-            <Col xs={24} md={12}>
-              <Card 
-                title={<CardTitle title="User Distribution" PrefixIcon={Graph} />}
-                variant="borderless"
-                loading={loading}
-              >
-                {userDistribution.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={userDistribution}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={true}
-                        label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {userDistribution.map((_,index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <Empty description="No user data available" />
-                )}
-              </Card>
-            </Col>
-            
-            <Col xs={24} md={12}>
-              <Card 
-                title={<CardTitle title="Stores Status" PrefixIcon={Graph} />}
-                variant="borderless"
-                loading={loading}
-              >
-                {storeStatusData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={storeStatusData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={true}
-                        label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {storeStatusData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <Empty description="No store data available" />
-                )}
-              </Card>
-            </Col>
-          </>
+          <Col xs={24}>
+            <Card 
+              title={<CardTitle title="User Distribution" PrefixIcon={Graph} />}
+              variant="borderless"
+              loading={loading}
+            >
+              {userDistribution.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={userDistribution}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={true}
+                      label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {userDistribution.map((_,index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <Empty description="No user data available" />
+              )}
+            </Card>
+          </Col>
         )}
       </Row>
       
