@@ -348,14 +348,12 @@ const Products = () => {
                   render: (_, record: Product) => (
                     <Space wrap>
                       <Button
-                        type="link"
                         onClick={() => setCurrentProduct(record)}
                       >
                         Edit
                       </Button>
                       {user?.role === "admin" && (
                         <Button
-                          type="link"
                           danger
                           onClick={() => handleDelete(record._id)}
                         >

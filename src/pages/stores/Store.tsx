@@ -112,11 +112,12 @@ const Stores = () => {
             title: 'Actions',
             render: (_: string, record: StoreData ) => (
                 <Space>
-                    <Button type="link" onClick={() => {
-                        setCurrentEditingStore(record);
-                        setDrawerOpen(true);
-                        form.setFieldsValue(record);
-                    }}>
+                    <Button 
+                        onClick={() => {
+                            setCurrentEditingStore(record);
+                            setDrawerOpen(true);
+                            form.setFieldsValue(record);
+                        }}>
                         Edit
                     </Button>
                 </Space>

@@ -12,7 +12,7 @@ import {
 import { Coupon, CouponCreatePayload, Store } from "../../types";
 import { ColumnsType } from "antd/es/table";
 import type { Breakpoint } from "antd/es/_util/responsiveObserver";
-import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useState } from "react";
 import CustomModal from "../../components/ui/Modal";
@@ -134,15 +134,17 @@ const Promos = () => {
       render: (_: unknown, record: Coupon) => (
         <Space>
           <Button 
-            icon={<EditOutlined />} 
             onClick={() => handleEdit(record)}
-          />
+          >
+            Edit
+          </Button>
           {record.isActive ? (
             <Button 
               danger 
-              icon={<DeleteOutlined />} 
               onClick={() => deactivateMutation.mutate(record.id)}
-            />
+            >
+              Delete
+            </Button>
           ) : (
             <Button 
               type="primary" 
