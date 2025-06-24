@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { 
   Button,
   Card,
@@ -11,7 +11,6 @@ import {
   Typography,
   Empty,
   Spin,
-  Progress
 } from "antd";
 import Icon from "@ant-design/icons";
 import { Link } from "react-router-dom";
@@ -22,7 +21,7 @@ import Graph from "../components/logos/GraphIcon";
 import { getOrders, getUsers, getStores } from "../http/api";
 import { format } from "date-fns";
 import { colorMapping } from "../constants";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import {Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 const { Title, Text } = Typography;
 
@@ -65,7 +64,7 @@ const CardTitle = ({ title, PrefixIcon }: CardTitleProps) => {
   } else if (title === "Total sale") {
     bgColor = "#fff1f0";
     iconColor = "#f5222d"; 
-  } else if (title === "Sales") {
+  } else if (title === "Total stores") {
     bgColor = "#f9f0ff";
     iconColor = "#722ed1"; 
   } else if (title === "Recent orders") {
@@ -74,7 +73,7 @@ const CardTitle = ({ title, PrefixIcon }: CardTitleProps) => {
   } else if (title === "User Distribution") {
     bgColor = "#f0f5ff";
     iconColor = "#2f54eb";
-  } else if (title === "Stores Overview") {
+  } else if (title === "Stores Status") {
     bgColor = "#f6ffed";
     iconColor = "#52c41a";
   }
@@ -99,7 +98,6 @@ const aggregateData = (data: Record<string, unknown>[], key: string) => {
   }, {} as Record<string, number>);
 };
 
-
 const formatChartData = (data: Record<string, number>) => {
   return Object.entries(data).map(([name, value]) => ({ name, value }));
 };
@@ -114,6 +112,7 @@ function HomePage() {
     createdAt?: string;
     address?: string;
     orderStatus?: string;
+    store?: { id: string };
   }
 
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
@@ -122,42 +121,48 @@ function HomePage() {
   const [loading, setLoading] = useState(true);
   const [userDistribution, setUserDistribution] = useState<{name: string, value: number}[]>([]);
   interface Store {
-    id?: string;
+    id: string;
     name?: string;
     address?: string;
   }
-  const [storesData, setStoresData] = useState<{ name: string; orders: number }[]>([]);
   const [activeStores, setActiveStores] = useState(0);
   const [totalStores, setTotalStores] = useState(0);
+
+  const storeStatusData = useMemo(() => {
+    if (totalStores === 0) return [];
+    return [
+      { name: 'Active', value: activeStores },
+      { name: 'Inactive', value: totalStores - activeStores }
+    ];
+  }, [activeStores, totalStores]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
         
-        const orderParams: Record<string, string | number> = {
-          limit: 5,
-          sortBy: "createdAt:desc"
-        };
-        
         if (user?.role === "manager" && user?.store?.id) {
-          orderParams.storeId = user.store.id;
-        }
+          const orderParams: Record<string, string | number> = {
+            limit: 5,
+            sortBy: "createdAt:desc",
+            storeId: user.store.id
+          };
 
-        const orderQueryString = new URLSearchParams(
-          Object.fromEntries(
-            Object.entries(orderParams).map(([key, value]) => [key, String(value)])
-          )
-        ).toString();
-        
-        const orderResponse = await getOrders(orderQueryString);
-        setRecentOrders(orderResponse.data.data || []);
-        setTotalOrders(orderResponse.data.total || 0);
-        
-        const salesTotal = (orderResponse.data.data || []).reduce(
-          (sum: number, order: Order) => sum + (order.total || 0), 0
-        );
-        setTotalSales(salesTotal);
+          const orderQueryString = new URLSearchParams(
+            Object.fromEntries(
+              Object.entries(orderParams).map(([key, value]) => [key, String(value)])
+            )
+          ).toString();
+          
+          const orderResponse = await getOrders(orderQueryString);
+          setRecentOrders(orderResponse.data.data || []);
+          setTotalOrders(orderResponse.data.total || 0);
+          
+          const salesTotal = (orderResponse.data.data || []).reduce(
+            (sum: number, order: Order) => sum + (order.total || 0), 0
+          );
+          setTotalSales(salesTotal);
+        }
 
         if (user?.role === "admin") {
           const userResponse = await getUsers("");
@@ -169,17 +174,20 @@ function HomePage() {
           const stores: Store[] = storesResponse.data.data || [];
           setTotalStores(stores.length);
 
-          const activeCount = stores.filter((store) => 
+          const activeCount = stores.filter(store => 
             store.name && store.address
           ).length;
           setActiveStores(activeCount);
 
-          setStoresData(
-            stores.slice(0, 5).map((store: Store) => ({
-              name: store.name || 'Unnamed',
-              orders: Math.floor(Math.random() * 100)
-            }))
-          );
+          const allOrdersResponse = await getOrders("limit=0");
+          const allOrders: Order[] = allOrdersResponse.data.data || [];
+          
+          const ordersByStore: Record<string, number> = {};
+          allOrders.forEach(order => {
+            if (order.store?.id) {
+              ordersByStore[order.store.id] = (ordersByStore[order.store.id] || 0) + 1;
+            }
+          });
         }
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
@@ -203,58 +211,44 @@ function HomePage() {
       </Title>
       
       <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} md={6}>
-          <Card
-            title={<CardTitle title="Total orders" PrefixIcon={Orders} />}
-            variant="borderless"
-            loading={loading}
-          >
-            <Statistic value={totalOrders} />
-          </Card>
-        </Col>
-        
-        <Col xs={24} sm={12} md={6}>
-          <Card
-            title={<CardTitle title="Total sale" PrefixIcon={Graph} />}
-            variant="borderless"
-            loading={loading}
-          >
-            <Statistic 
-              value={totalSales} 
-              precision={2} 
-              prefix="₹" 
-            />
-          </Card>
-        </Col>
-        
-        {user?.role === "admin" && (
+        {user?.role === "manager" && (
           <>
-            <Col xs={24} sm={12} md={6}>
+            <Col xs={24} sm={12} md={8}>
               <Card
-                title={<CardTitle title="Total Stores" PrefixIcon={Graph} />}
+                title={<CardTitle title="Total orders" PrefixIcon={Orders} />}
                 variant="borderless"
                 loading={loading}
               >
-                <Statistic value={totalStores} />
+                <Statistic value={totalOrders} />
               </Card>
             </Col>
             
-            <Col xs={24} sm={12} md={6}>
+            <Col xs={24} sm={12} md={8}>
               <Card
-                title={<CardTitle title="Active Stores" PrefixIcon={Graph} />}
+                title={<CardTitle title="Total sale" PrefixIcon={Graph} />}
                 variant="borderless"
                 loading={loading}
               >
-                <Statistic value={activeStores} />
-                <Progress 
-                  percent={totalStores ? Math.round((activeStores / totalStores) * 100) : 0} 
-                  size="small" 
-                  status="active"
-                  style={{ marginTop: '8px' }}
+                <Statistic 
+                  value={totalSales} 
+                  precision={2} 
+                  prefix="₹" 
                 />
               </Card>
             </Col>
           </>
+        )}
+
+        {user?.role === "admin" && (
+          <Col xs={24} sm={12} md={8}>
+            <Card
+              title={<CardTitle title="Total stores" PrefixIcon={Graph} />}
+              variant="borderless"
+              loading={loading}
+            >
+              <Statistic value={totalStores} />
+            </Card>
+          </Col>
         )}
       </Row>
     
@@ -296,20 +290,30 @@ function HomePage() {
             
             <Col xs={24} md={12}>
               <Card 
-                title={<CardTitle title="Top Stores" PrefixIcon={Graph} />}
+                title={<CardTitle title="Stores Status" PrefixIcon={Graph} />}
                 variant="borderless"
                 loading={loading}
               >
-                {storesData.length > 0 ? (
+                {storeStatusData.length > 0 ? (
                   <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={storesData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
+                    <PieChart>
+                      <Pie
+                        data={storeStatusData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={true}
+                        label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {storeStatusData.map((_, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
                       <Tooltip />
                       <Legend />
-                      <Bar dataKey="orders" fill="#8884d8" name="Orders" />
-                    </BarChart>
+                    </PieChart>
                   </ResponsiveContainer>
                 ) : (
                   <Empty description="No store data available" />
@@ -320,72 +324,73 @@ function HomePage() {
         )}
       </Row>
       
-
-      <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
-        <Col xs={24} xl={12}>
-          <Card
-            bordered={false}
-            title={<CardTitle title="Recent orders" PrefixIcon={Orders} />}
-          >
-            {loading ? (
-              <Spin tip="Loading orders..." />
-            ) : recentOrders.length === 0 ? (
-              <Empty description="No recent orders" />
-            ) : (
-              <>
-                <List
-                  className="demo-loadmore-list"
-                  loading={false}
-                  itemLayout="horizontal"
-                  dataSource={recentOrders}
-                  renderItem={(order) => {
-                    const orderId = order._id ? `Order #${order._id.slice(-6).toUpperCase()}` : "Order";
-                    const orderTotal = order.total ? `₹${order.total.toFixed(2)}` : "₹0.00";
-                    const createdAt = order.createdAt 
-                      ? format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm') 
-                      : "Unknown date";
-                    type StatusKey = keyof typeof colorMapping;
-                    const status: StatusKey = (order.orderStatus as StatusKey) || "received";
-                    
-                    return (
-                      <List.Item>
-                        <List.Item.Meta
-                          title={
-                            <Link to={`/orders/${order._id || ''}`}>
-                              {orderId}
-                            </Link>
-                          }
-                          description={
-                            <Space direction="vertical" size={2}>
-                              <Text>{order.address || "No address"}</Text>
-                              <Text type="secondary">{createdAt}</Text>
-                            </Space>
-                          }
-                        />
-                        <Row style={{ flex: 1 }} justify="space-between">
-                          <Col>
-                            <Text strong>{orderTotal}</Text>
-                          </Col>
-                          <Col>
-                            <Tag color={colorMapping[status] || "default"}>
-                              {capitalizeFirst(status)}
-                            </Tag>
-                          </Col>
-                        </Row>
-                      </List.Item>
-                    );
-                  }}
-                />
-                <div style={{ marginTop: '20px', textAlign: 'right' }}>
-                  <Button type="link">
-                    <Link to="/orders">See all orders</Link>
-                  </Button>
-                </div>
-              </>
-            )}
-          </Card>
-        </Col>
-      </Row>
+      {user?.role === "manager" && (
+        <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
+          <Col xs={24} xl={24}>
+            <Card
+              variant="borderless"
+              title={<CardTitle title="Recent orders" PrefixIcon={Orders} />}
+            >
+              {loading ? (
+                <Spin tip="Loading orders..." />
+              ) : recentOrders.length === 0 ? (
+                <Empty description="No recent orders" />
+              ) : (
+                <>
+                  <List
+                    className="demo-loadmore-list"
+                    loading={false}
+                    itemLayout="horizontal"
+                    dataSource={recentOrders}
+                    renderItem={(order) => {
+                      const orderId = order._id ? `Order #${order._id.slice(-6).toUpperCase()}` : "Order";
+                      const orderTotal = order.total ? `₹${order.total.toFixed(2)}` : "₹0.00";
+                      const createdAt = order.createdAt 
+                        ? format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm') 
+                        : "Unknown date";
+                      type StatusKey = keyof typeof colorMapping;
+                      const status: StatusKey = (order.orderStatus as StatusKey) || "received";
+                      
+                      return (
+                        <List.Item>
+                          <List.Item.Meta
+                            title={
+                              <Link to={`/orders/${order._id || ''}`}>
+                                {orderId}
+                              </Link>
+                            }
+                            description={
+                              <Space direction="vertical" size={2}>
+                                <Text>{order.address || "No address"}</Text>
+                                <Text type="secondary">{createdAt}</Text>
+                              </Space>
+                            }
+                          />
+                          <Row style={{ flex: 1 }} justify="space-between">
+                            <Col>
+                              <Text strong>{orderTotal}</Text>
+                            </Col>
+                            <Col>
+                              <Tag color={colorMapping[status] || "default"}>
+                                {capitalizeFirst(status)}
+                              </Tag>
+                            </Col>
+                          </Row>
+                        </List.Item>
+                      );
+                    }}
+                  />
+                  <div style={{ marginTop: '20px', textAlign: 'right' }}>
+                    <Button type="link">
+                      <Link to="/orders">See all orders</Link>
+                    </Button>
+                  </div>
+                </>
+              )}
+            </Card>
+          </Col>
+        </Row>
+      )}
     </div>
   );
 }
