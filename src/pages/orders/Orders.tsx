@@ -95,60 +95,54 @@ const columns = [
     },
 ];
 
-// todo: make this dynamic.
-const STORE_ID = 10;
-
 const Orders = () => {
-
     const { user } = useAuthStore();
     const queryClient = useQueryClient();
-
     const [messageApi, contextHolder] = message.useMessage();
 
+    const storeId = user?.store?.id;
+
     React.useEffect(() => {
-        if (user?.store) {
-            socket.on('order-update', (data) => {
-                // todo: data.event_type =
-                if (
-                    (data.event_type === OrderEvents.ORDER_CREATE &&
-                        data.data.paymentMode === PaymentMode.CASH) ||
-                    (data.event_type === OrderEvents.PAYMENT_STATUS_UPDATE &&
-                        data.data.paymentStatus === PaymentStatus.PAID &&
-                        data.data.paymentMode === PaymentMode.CARD)
-                ) {
-                    queryClient.setQueryData(['orders'], (old: Order[]) => [data.data, ...old]);
-                    messageApi.open({
-                        type: 'success',
-                        content: 'New Order Received.',
-                    });
-                }
+        if (!storeId) return;
 
-                console.log('data received: ', data);
-            });
 
-            socket.on('join', (data) => {
-                console.log('User joined in: ', data.roomId);
-            });
+        socket.emit('join', { storeId });
+        
+        socket.on('join', (data) => {
+            console.log('User joined in: ', data.roomId);
+        });
 
-            socket.emit('join', {
-                storeId: user.store.id,
-            });
-        }
+        socket.on('order-update', (data) => {
+            if (
+                (data.event_type === OrderEvents.ORDER_CREATE &&
+                    data.data.paymentMode === PaymentMode.CASH) ||
+                (data.event_type === OrderEvents.PAYMENT_STATUS_UPDATE &&
+                    data.data.paymentStatus === PaymentStatus.PAID &&
+                    data.data.paymentMode === PaymentMode.CARD)
+            ) {
+                queryClient.setQueryData(['orders', storeId], (old: Order[]) => [data.data, ...old]);
+                messageApi.success('New Order Received');
+            }
+        });
 
         return () => {
             socket.off('join');
             socket.off('order-update');
+            socket.emit('leave', { storeId });
         };
-    }, []);
+    }, [storeId, queryClient, messageApi]);
 
 
     const { data: orders } = useQuery({
-        queryKey: ['orders'],
+        queryKey: ['orders', storeId],
         queryFn: () => {
-            // If admin user then make sure to send storeID, or store id from selected filter.
-            const queryString = new URLSearchParams({ storeId: String(STORE_ID) }).toString();
-            return getOrders(queryString).then((res) => res.data);
+            if (!storeId) return Promise.resolve([]);
+            const queryString = new URLSearchParams({ 
+                storeId: String(storeId) 
+            }).toString();
+            return getOrders(queryString).then(res => res.data);
         },
+        enabled: !!storeId
     });
 
     return (
@@ -161,11 +155,13 @@ const Orders = () => {
                         items={[{ title: <Link to="/">Dashboard</Link> }, { title: 'Orders' }]}
                     />
                 </Flex>
-
-                <Table columns={columns} rowKey={'_id'} dataSource={orders} />
+                <Table 
+                    columns={columns} 
+                    rowKey={'_id'} 
+                    dataSource={orders || []} 
+                />
             </Space>
         </>
     );
 };
-
 export default Orders;
