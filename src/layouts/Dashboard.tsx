@@ -122,6 +122,7 @@ const Dashboard = () => {
               setCollapsed(true);
             }
           }}
+          style={{ marginTop: "18px" }}
         />
       </Sider>
       <Layout>
