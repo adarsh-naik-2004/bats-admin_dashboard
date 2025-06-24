@@ -1,4 +1,15 @@
-import { Card, Col, Form, FormInstance, Input, Row, Select, Space, Switch, Typography } from 'antd';
+import {
+    Card,
+    Col,
+    Form,
+    FormInstance,
+    Input,
+    Row,
+    Select,
+    Space,
+    Switch,
+    Typography,
+} from 'antd';
 
 import { Category, Store } from '../../../types';
 import { useQuery } from '@tanstack/react-query';
@@ -11,58 +22,46 @@ import { useAuthStore } from '../../../store';
 const ProductForm = ({ form }: { form: FormInstance }) => {
     const { user } = useAuthStore();
     const selectedCategory = Form.useWatch('categoryId');
-    console.log(selectedCategory);
+
     const { data: categories } = useQuery({
         queryKey: ['categories'],
-        queryFn: () => {
-            return getCategories();
-        },
+        queryFn: getCategories,
     });
 
     const { data: shops } = useQuery({
         queryKey: ['shops'],
-        queryFn: () => {
-            return getStores(`perPage=100&currentPage=1`);
-        },
+        queryFn: () => getStores(`perPage=100&currentPage=1`),
     });
 
     return (
-        <Row>
-            <Col span={24}>
-                <Space direction="vertical" size="large">
-                    <Card title="Product info" bordered={false}>
-                        <Row gutter={20}>
-                            <Col span={12}>
+        <Row justify="center">
+            <Col xs={24} sm={24} md={22} lg={20}>
+                <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                    <Card title="Product Info" variant="borderless">
+                        <Row gutter={[16, 16]}>
+                            <Col xs={24} md={12}>
                                 <Form.Item
-                                    label="Product name"
+                                    label="Product Name"
                                     name="name"
-                                    rules={[
-                                        {
-                                            required: true,
-                                            message: 'Product name is required',
-                                        },
-                                    ]}>
+                                    rules={[{ required: true, message: 'Product name is required' }]}
+                                >
                                     <Input size="large" />
                                 </Form.Item>
                             </Col>
-                            <Col span={12}>
+                            <Col xs={24} md={12}>
                                 <Form.Item
                                     label="Category"
                                     name="categoryId"
-                                    rules={[
-                                        {
-                                            required: true,
-                                            message: 'Category is required',
-                                        },
-                                    ]}>
+                                    rules={[{ required: true, message: 'Category is required' }]}
+                                >
                                     <Select
                                         size="large"
+                                        allowClear
+                                        placeholder="Select category"
                                         style={{ width: '100%' }}
-                                        allowClear={true}
-                                        onChange={() => {}}
-                                        placeholder="Select category">
+                                    >
                                         {categories?.data.map((category: Category) => (
-                                            <Select.Option value={category._id} key={category._id}>
+                                            <Select.Option key={category._id} value={category._id}>
                                                 {category.name}
                                             </Select.Option>
                                         ))}
@@ -73,52 +72,44 @@ const ProductForm = ({ form }: { form: FormInstance }) => {
                                 <Form.Item
                                     label="Description"
                                     name="description"
-                                    rules={[
-                                        {
-                                            required: true,
-                                            message: 'Description is required',
-                                        },
-                                    ]}>
+                                    rules={[{ required: true, message: 'Description is required' }]}
+                                >
                                     <Input.TextArea
                                         rows={2}
                                         maxLength={100}
-                                        style={{ resize: 'none' }}
                                         size="large"
+                                        style={{ resize: 'none' }}
                                     />
                                 </Form.Item>
                             </Col>
                         </Row>
                     </Card>
-                    <Card title="Product image" bordered={false}>
-                        <Row gutter={20}>
-                            <Col span={12}>
+
+                    <Card title="Product Image" variant="borderless">
+                        <Row gutter={[16, 16]}>
+                            <Col xs={24} md={12}>
                                 <ProductImage initialImage={form.getFieldValue('image')} />
                             </Col>
                         </Row>
                     </Card>
+
                     {user?.role !== 'manager' && (
-                        <Card title="Store info" bordered={false}>
-                            <Row gutter={24}>
+                        <Card title="Store Info" variant="borderless">
+                            <Row gutter={[16, 16]}>
                                 <Col span={24}>
                                     <Form.Item
                                         label="Shop"
                                         name="storeId"
-                                        rules={[
-                                            {
-                                                required: true,
-                                                message: 'Shop is required',
-                                            },
-                                        ]}>
+                                        rules={[{ required: true, message: 'Shop is required' }]}
+                                    >
                                         <Select
                                             size="large"
+                                            allowClear
+                                            placeholder="Select shop"
                                             style={{ width: '100%' }}
-                                            allowClear={true}
-                                            onChange={() => {}}
-                                            placeholder="Select shop">
+                                        >
                                             {shops?.data.data.map((store: Store) => (
-                                                <Select.Option
-                                                    value={String(store.id)}
-                                                    key={store.id}>
+                                                <Select.Option key={store.id} value={String(store.id)}>
                                                     {store.name}
                                                 </Select.Option>
                                             ))}
@@ -132,21 +123,17 @@ const ProductForm = ({ form }: { form: FormInstance }) => {
                     {selectedCategory && <Pricing selectedCategory={selectedCategory} />}
                     {selectedCategory && <Attributes selectedCategory={selectedCategory} />}
 
-                    <Card title="Other properties" bordered={false}>
-                        <Row gutter={24}>
+                    <Card title="Other Properties" variant="borderless">
+                        <Row gutter={[16, 16]}>
                             <Col span={24}>
-                                <Space>
-                                    <Form.Item name="isPublish">
+                                <Space align="center">
+                                    <Form.Item name="isPublish" valuePropName="checked" noStyle>
                                         <Switch
-                                            defaultChecked={false}
-                                            onChange={() => {}}
                                             checkedChildren="Yes"
                                             unCheckedChildren="No"
                                         />
                                     </Form.Item>
-                                    <Typography.Text style={{ marginBottom: 22, display: 'block' }}>
-                                        Published
-                                    </Typography.Text>
+                                    <Typography.Text>Published</Typography.Text>
                                 </Space>
                             </Col>
                         </Row>

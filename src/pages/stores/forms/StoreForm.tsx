@@ -8,9 +8,13 @@ const StoreForm: React.FC<StoreFormProps> = ({ isEditMode }) => {
     return (
         <Row>
             <Col span={24}>
-                <Card title={isEditMode ? "Edit Store" : "Basic Info"} variant="borderless" style={{ width: '100%' }}>
-                    <Row gutter={20}>
-                        <Col span={12}>
+                <Card 
+                    title={isEditMode ? "Edit Store" : "Basic Info"} 
+                    variant="borderless" 
+                    bodyStyle={{ padding: '16px' }}
+                >
+                    <Row gutter={[16, 16]}>
+                        <Col xs={24} sm={24} md={12}>
                             <Form.Item
                                 label="Name"
                                 name="name"
@@ -23,7 +27,7 @@ const StoreForm: React.FC<StoreFormProps> = ({ isEditMode }) => {
                                 <Input size="large" />
                             </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} sm={24} md={12}>
                             <Form.Item
                                 label="Address"
                                 name="address"

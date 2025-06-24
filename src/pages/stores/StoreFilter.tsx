@@ -5,18 +5,22 @@ type StoresFilterProps = {
 };
 const StoreFilter = ({ children }: StoresFilterProps) => {
     return (
-        <Card>
-            <Row justify="space-between">
-                <Col span={16}>
-                    <Row gutter={20}>
-                        <Col span={12}>
+        <Card bodyStyle={{ padding: '16px' }}>
+            <Row gutter={[16, 16]} justify="space-between" align="middle">
+                <Col xs={24} sm={24} md={16}>
+                    <Row gutter={[16, 16]}>
+                        <Col xs={24} sm={24} md={12} lg={12}>
                             <Form.Item name="q">
-                                <Input.Search allowClear={true} placeholder="Search" />
+                                <Input.Search 
+                                    allowClear={true} 
+                                    placeholder="Search" 
+                                    size="large"
+                                />
                             </Form.Item>
                         </Col>
                     </Row>
                 </Col>
-                <Col span={8} style={{ display: 'flex', justifyContent: 'end' }}>
+                <Col xs={24} sm={24} md={8} style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     {children}
                 </Col>
             </Row>

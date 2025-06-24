@@ -16,10 +16,10 @@ const UserForm = ({ isEditMode = false }: { isEditMode: boolean }) => {
     return (
         <Row>
             <Col span={24}>
-                <Space direction="vertical" size="large">
-                    <Card title="Basic info" variant="borderless">
-                        <Row gutter={20}>
-                            <Col span={12}>
+                <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                    <Card title="Basic info" variant="borderless" styles={{ body: { padding: '16px' } }}>
+                        <Row gutter={[16, 16]}>
+                            <Col xs={24} sm={24} md={12}>
                                 <Form.Item
                                     label="First name"
                                     name="firstName"
@@ -32,7 +32,7 @@ const UserForm = ({ isEditMode = false }: { isEditMode: boolean }) => {
                                     <Input size="large" />
                                 </Form.Item>
                             </Col>
-                            <Col span={12}>
+                            <Col xs={24} sm={24} md={12}>
                                 <Form.Item
                                     label="Last name"
                                     name="lastName"
@@ -45,7 +45,7 @@ const UserForm = ({ isEditMode = false }: { isEditMode: boolean }) => {
                                     <Input size="large" />
                                 </Form.Item>
                             </Col>
-                            <Col span={12}>
+                            <Col xs={24} sm={24} md={12}>
                                 <Form.Item
                                     label="Email"
                                     name="email"
@@ -65,11 +65,11 @@ const UserForm = ({ isEditMode = false }: { isEditMode: boolean }) => {
                         </Row>
                     </Card>
                     {!isEditMode && (
-                        <Card title="Security info" variant="borderless">
-                            <Row gutter={20}>
-                                <Col span={12}>
+                        <Card title="Security info" variant="borderless" styles={{ body: { padding: '16px' } }}>
+                            <Row gutter={[16, 16]}>
+                                <Col xs={24} sm={24} md={12}>
                                     <Form.Item
-                                        label="Passoword (Minimum 8 Characters)"
+                                        label="Password (Minimum 8 Characters)"
                                         name="password"
                                         rules={[
                                             {
@@ -84,9 +84,9 @@ const UserForm = ({ isEditMode = false }: { isEditMode: boolean }) => {
                         </Card>
                     )}
 
-                    <Card title="Role" variant="borderless">
-                        <Row gutter={20}>
-                            <Col span={12}>
+                    <Card title="Role" variant="borderless" styles={{ body: { padding: '16px' } }}>
+                        <Row gutter={[16, 16]}>
+                            <Col xs={24} sm={24} md={12}>
                                 <Form.Item
                                     label="Role"
                                     name="role"
@@ -109,7 +109,7 @@ const UserForm = ({ isEditMode = false }: { isEditMode: boolean }) => {
                                 </Form.Item>
                             </Col>
                             {selectedRole === 'manager' && (
-                                <Col span={12}>
+                                <Col xs={24} sm={24} md={12}>
                                     <Form.Item
                                         label="Shop"
                                         name="storeId"

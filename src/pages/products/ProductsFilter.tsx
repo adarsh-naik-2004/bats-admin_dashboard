@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { Card, Col, Form, Input, Row, Select, Space, Switch, Typography } from 'antd';
-import { getCategories, getStores } from '../../http/api';
 import { Category, Store } from '../../types';
 import { useAuthStore } from '../../store';
+import { getCategories, getStores } from '../../http/api';
 
 type ProductsFilterProps = {
     children?: React.ReactNode;
@@ -12,79 +12,77 @@ const ProductsFilter = ({ children }: ProductsFilterProps) => {
     const { user } = useAuthStore();
     const { data: shops } = useQuery({
         queryKey: ['shops'],
-        queryFn: () => {
-            return getStores(`perPage=100&currentPage=1`);
-        },
+        queryFn: () => getStores(`perPage=100&currentPage=1`),
     });
 
     const { data: categories } = useQuery({
         queryKey: ['categories'],
-        queryFn: () => {
-            return getCategories();
-        },
+        queryFn: () => getCategories(),
     });
 
     return (
-        <Card>
-            <Row justify="space-between">
-                <Col span={16}>
-                    <Row gutter={20}>
-                        <Col span={6}>
-                            <Form.Item name="q">
-                                <Input.Search allowClear={true} placeholder="Search" />
+        <Card className="mb-4 shadow-sm">
+            <Row gutter={[16, 16]} align="middle">
+                <Col xs={24} md={16}>
+                    <Row gutter={[16, 16]}>
+                        <Col xs={24} md={8}>
+                            <Form.Item name="q" className="mb-0">
+                                <Input.Search 
+                                    allowClear={true} 
+                                    placeholder="Search" 
+                                    className="w-full"
+                                />
                             </Form.Item>
                         </Col>
 
-                        <Col span={6}>
-                            <Form.Item name="categoryId">
+                        <Col xs={24} md={8}>
+                            <Form.Item name="categoryId" className="mb-0">
                                 <Select
-                                    style={{ width: '100%' }}
                                     allowClear={true}
-                                    placeholder="Select category">
-                                    {categories?.data.map((category: Category) => {
-                                        return (
-                                            <Select.Option key={category._id} value={category._id}>
-                                                {category.name}
-                                            </Select.Option>
-                                        );
-                                    })}
+                                    placeholder="Select category"
+                                    className="w-full"
+                                >
+                                    {categories?.data.map((category: Category) => (
+                                        <Select.Option key={category._id} value={category._id}>
+                                            {category.name}
+                                        </Select.Option>
+                                    ))}
                                 </Select>
                             </Form.Item>
                         </Col>
+                        
                         {user!.role === 'admin' && (
-                            <Col span={6}>
-                                <Form.Item name="StoreId">
+                            <Col xs={24} md={8}>
+                                <Form.Item name="StoreId" className="mb-0">
                                     <Select
-                                        style={{ width: '100%' }}
                                         allowClear={true}
-                                        placeholder="Select shop">
-                                        {shops?.data.data.map((shop: Store) => {
-                                            return (
-                                                <Select.Option
-                                                    key={shop.id}
-                                                    value={shop.id}>
-                                                    {shop.name}
-                                                </Select.Option>
-                                            );
-                                        })}
+                                        placeholder="Select shop"
+                                        className="w-full"
+                                    >
+                                        {shops?.data.data.map((shop: Store) => (
+                                            <Select.Option key={shop.id} value={shop.id}>
+                                                {shop.name}
+                                            </Select.Option>
+                                        ))}
                                     </Select>
                                 </Form.Item>
                             </Col>
                         )}
 
-                        <Col span={6}>
-                            <Space>
-                                <Form.Item name="isPublish">
-                                    <Switch defaultChecked={false} onChange={() => {}} />
-                                </Form.Item>
-                                <Typography.Text style={{ marginBottom: 22, display: 'block' }}>
-                                    Show only published
-                                </Typography.Text>
-                            </Space>
+                        <Col xs={24}>
+                            <Form.Item name="isPublish" className="mb-0">
+                                <Space className="flex items-center">
+                                    <Switch defaultChecked={false} />
+                                    <Typography.Text className="font-medium">
+                                        Show only published
+                                    </Typography.Text>
+                                </Space>
+                            </Form.Item>
                         </Col>
                     </Row>
                 </Col>
-                <Col span={8} style={{ display: 'flex', justifyContent: 'end' }}>
+                
+                <Col xs={24} md={8} className="flex justify-start md:justify-end">
                     {children}
                 </Col>
             </Row>

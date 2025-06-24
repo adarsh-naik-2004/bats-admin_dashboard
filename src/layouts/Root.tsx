@@ -4,7 +4,7 @@ import { self } from "../http/api";
 import { useAuthStore } from "../store";
 import { useEffect } from "react";
 import { AxiosError } from "axios";
-import { ConfigProvider, theme } from "antd";
+import { ConfigProvider, Spin, theme } from "antd";
 import { useThemeStore } from "../store"; 
 
 const getSelf = async () => {
@@ -33,13 +33,32 @@ const Root = () => {
     }
   }, [data, setUser]);
 
-  if (isLoading) {
-    return <div>Loading.......</div>;
-  }
-
   return (
     <ConfigProvider theme={{ algorithm: darkMode ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
-      <Outlet />
+      {isLoading ? (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          background: darkMode ? '#141414' : '#f5f5f5'
+        }}>
+          <Spin 
+            size="large" 
+            tip="Initializing..." 
+            indicator={
+              <div className="custom-spin">
+                <div className="spinner">
+                  <div className="spinner-sector spinner-sector-top"></div>
+                  <div className="spinner-sector spinner-sector-bottom"></div>
+                </div>
+              </div>
+            }
+          />
+        </div>
+      ) : (
+        <Outlet />
+      )}
     </ConfigProvider>
   );
 };

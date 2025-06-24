@@ -1,4 +1,4 @@
-import { Layout, Card, Space, Form, Input, Checkbox, Button, Flex, Alert, Switch } from 'antd';
+import { Layout, Card, Space, Form, Input, Button, Flex, Alert, Switch } from 'antd';
 import { LockFilled, UserOutlined, LockOutlined, MoonOutlined, SunOutlined } from '@ant-design/icons';
 import { login, self, logout } from '../../http/api';
 import { Credentials } from '../../types';
@@ -132,16 +132,6 @@ const LoginPage = () => {
                 style={{ backgroundColor: darkMode ? '#141414' : '#fff' }}
               />
             </Form.Item>
-            <Flex justify="space-between">
-              <Form.Item name="remember" valuePropName="checked">
-                <Checkbox style={{ color: darkMode ? '#fff' : 'inherit' }}>
-                  Remember me
-                </Checkbox>
-              </Form.Item>
-              <a href="" id="login-form-forgot" style={{ color: darkMode ? '#1677ff' : 'inherit' }}>
-                Forgot password
-              </a>
-            </Flex>
             <Form.Item>
               <Button
                 type="primary"

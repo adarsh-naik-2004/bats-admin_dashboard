@@ -17,31 +17,48 @@ const ProductImage = ({ initialImage }: { initialImage: string }) => {
                 messageApi.error('You can only upload JPG/PNG file!');
             }
 
-    
             setImageUrl(URL.createObjectURL(file));
-
-            return false;
+            return false; // Prevent automatic upload
         },
     };
 
     return (
         <Form.Item
-            label=""
+            label="Product Image"
             name="image"
             rules={[
                 {
                     required: true,
                     message: 'Please upload a product image',
                 },
-            ]}>
-            <Upload listType="picture-card" {...uploaderConfig}>
-                {contextHolder}
+            ]}
+            style={{ marginBottom: '1rem' }}
+        >
+            {contextHolder}
+            <Upload
+                {...uploaderConfig}
+                listType="picture-card"
+                className="responsive-upload"
+                style={{
+                    maxWidth: 200,
+                    width: '100%',
+                }}
+            >
                 {imageUrl ? (
-                    <img src={imageUrl} alt="avatar" style={{ width: '100%' }} />
+                    <img
+                        src={imageUrl}
+                        alt="product"
+                        style={{
+                            width: '100%',
+                            height: 'auto',
+                            borderRadius: 8,
+                            objectFit: 'cover',
+                        }}
+                    />
                 ) : (
-                    <Space direction="vertical">
-                        <PlusOutlined />
-                        <Typography.Text>Upload</Typography.Text>
+                    <Space direction="vertical" align="center">
+                        <PlusOutlined style={{ fontSize: 20 }} />
+                        <Typography.Text style={{ fontSize: 14 }}>Upload</Typography.Text>
                     </Space>
                 )}
             </Upload>

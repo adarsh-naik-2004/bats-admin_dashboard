@@ -11,6 +11,7 @@ import {
 } from "../../http/api";
 import { Coupon, CouponCreatePayload, Store } from "../../types";
 import { ColumnsType } from "antd/es/table";
+import type { Breakpoint } from "antd/es/_util/responsiveObserver";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useState } from "react";
@@ -44,7 +45,6 @@ const Promos = () => {
     queryFn: () => getStores('').then(res => res.data),
     enabled: user?.role === 'admin'
   });
-
 
   const coupons: Coupon[] = couponsResponse?.data || [];
   const total = couponsResponse?.total || 0;
@@ -82,19 +82,31 @@ const Promos = () => {
   });
 
   const columns: ColumnsType<Coupon> = [
-    { title: 'Title', dataIndex: 'title', key: 'title' },
-    { title: 'Code', dataIndex: 'code', key: 'code' },
+    { 
+      title: 'Title', 
+      dataIndex: 'title', 
+      key: 'title',
+      responsive: ['sm'] 
+    },
+    { 
+      title: 'Code', 
+      dataIndex: 'code', 
+      key: 'code',
+      responsive: ['sm'] 
+    },
     { 
       title: 'Discount', 
       dataIndex: 'discount', 
       key: 'discount',
-      render: (value: number) => `${value}%` 
+      render: (value: number) => `${value}%`,
+      responsive: ['md'] 
     },
     { 
       title: 'Valid Until', 
       dataIndex: 'validUpto', 
       key: 'validUpto',
-      render: (date: Date) => dayjs(date).format('MMM DD, YYYY') 
+      render: (date: Date) => dayjs(date).format('MMM DD, YYYY'),
+      responsive: ['lg'] 
     },
     { 
       title: 'Status', 
@@ -113,7 +125,8 @@ const Promos = () => {
       render: (storeId: number) => {
         const store = stores.find(s => s.id === storeId);
         return store ? store.name : storeId;
-      }
+      },
+      responsive: ['xl' as Breakpoint]
     }] : []),
     {
       title: 'Actions',
@@ -178,49 +191,65 @@ const Promos = () => {
   };
 
   return (
-    <Card 
-      title="Coupons & Promos" 
-      extra={
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-          Create Coupon
-        </Button>
-      }
-    >
-      <Space style={{ marginBottom: 16 }}>
-        {user?.role === 'admin' && (
-          <Select
-            placeholder="Filter by store"
-            style={{ width: 200 }}
-            allowClear
-            onChange={(value: number | undefined) => setStoreFilter(value)}
-            options={stores.map(store => ({
-              value: store.id,
-              label: store.name
-            }))}
-          />
-        )}
-        <Select
-          placeholder="Filter by status"
-          style={{ width: 120 }}
-          allowClear
-          onChange={setStatusFilter}
-          options={[
-            { value: 'active', label: 'Active' },
-            { value: 'inactive', label: 'Inactive' },
-          ]}
-        />
-      </Space>
+    <div className="p-4 md:p-6">
+      <Card 
+        title="Coupons & Promos" 
+        extra={
+          <Button 
+            type="primary" 
+            icon={<PlusOutlined />} 
+            onClick={handleCreate}
+            className="mb-4 md:mb-0"
+          >
+            Create Coupon
+          </Button>
+        }
+        className="shadow-md"
+      >
+        <Space 
+          direction="vertical" 
+          className="w-full mb-4"
+        >
+          <div className="flex flex-col md:flex-row gap-3">
+            {user?.role === 'admin' && (
+              <Select
+                placeholder="Filter by store"
+                className="w-full md:w-56"
+                allowClear
+                onChange={(value: number | undefined) => setStoreFilter(value)}
+                options={stores.map(store => ({
+                  value: store.id,
+                  label: store.name
+                }))}
+              />
+            )}
+            <Select
+              placeholder="Filter by status"
+              className="w-full md:w-40"
+              allowClear
+              onChange={setStatusFilter}
+              options={[
+                { value: 'active', label: 'Active' },
+                { value: 'inactive', label: 'Inactive' },
+              ]}
+            />
+          </div>
+        </Space>
 
-      <Table 
-        columns={columns} 
-        dataSource={coupons} 
-        loading={isLoading}
-        rowKey="id"
-        pagination={{
-          total: total,
-          showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
-        }}
-      />
+        <Table 
+          columns={columns} 
+          dataSource={coupons} 
+          loading={isLoading}
+          rowKey="id"
+          scroll={{ x: true }}
+          pagination={{
+            total: total,
+            showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
+            pageSizeOptions: ['5', '10', '20'],
+            showSizeChanger: true,
+          }}
+        />
+      </Card>
 
       <CustomModal
         title={editingCoupon ? "Edit Coupon" : "Create New Coupon"}
@@ -230,51 +259,61 @@ const Promos = () => {
         confirmLoading={createMutation.isPending || updateMutation.isPending}
       >
         <Form form={form} layout="vertical">
-          <Form.Item
-            name="title"
-            label="Title"
-            rules={[{ required: true, message: 'Please enter title' }]}
-          >
-            <Input />
-          </Form.Item>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Form.Item
+              name="title"
+              label="Title"
+              rules={[{ required: true, message: 'Please enter title' }]}
+              className="mb-3"
+            >
+              <Input />
+            </Form.Item>
+            
+            <Form.Item
+              name="code"
+              label="Coupon Code"
+              rules={[{ required: true, message: 'Please enter coupon code' }]}
+              className="mb-3"
+            >
+              <Input />
+            </Form.Item>
+          </div>
           
-          <Form.Item
-            name="code"
-            label="Coupon Code"
-            rules={[{ required: true, message: 'Please enter coupon code' }]}
-          >
-            <Input />
-          </Form.Item>
-          
-          <Form.Item
-            name="discount"
-            label="Discount (%)"
-            rules={[{ 
-              required: true, 
-              message: 'Please enter discount',
-              type: 'number',
-              min: 1,
-              max: 100
-            }]}
-          >
-            <InputNumber style={{ width: '100%' }} />
-          </Form.Item>
-          
-          <Form.Item
-            name="validUpto"
-            label="Valid Until"
-            rules={[{ required: true, message: 'Please select date' }]}
-          >
-            <DatePicker style={{ width: '100%' }} />
-          </Form.Item>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Form.Item
+              name="discount"
+              label="Discount (%)"
+              rules={[{ 
+                required: true, 
+                message: 'Please enter discount',
+                type: 'number',
+                min: 1,
+                max: 100
+              }]}
+              className="mb-3"
+            >
+              <InputNumber className="w-full" />
+            </Form.Item>
+            
+            <Form.Item
+              name="validUpto"
+              label="Valid Until"
+              rules={[{ required: true, message: 'Please select date' }]}
+              className="mb-3"
+            >
+              <DatePicker className="w-full" />
+            </Form.Item>
+          </div>
           
           {user?.role === 'admin' && (
             <Form.Item
               name="storeId"
               label="Store"
               rules={[{ required: true, message: 'Please select store' }]}
+              className="mb-3"
             >
               <Select
+                className="w-full"
                 options={stores.map(store => ({
                   value: store.id,
                   label: store.name
@@ -284,7 +323,7 @@ const Promos = () => {
           )}
         </Form>
       </CustomModal>
-    </Card>
+    </div>
   );
 };
 

@@ -153,10 +153,11 @@ const Orders = () => {
   });
 
   return (
-    <>
-      {contextHolder}
+  <>
+    {contextHolder}
+    <div className="page-container">
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        <Flex justify="space-between">
+        <Flex justify="space-between" align="center" wrap="wrap" gap="small">
           <Breadcrumb
             separator={<RightOutlined />}
             items={[
@@ -165,9 +166,20 @@ const Orders = () => {
             ]}
           />
         </Flex>
-        <Table columns={columns} rowKey={"_id"} dataSource={ordersResponse?.data || []} />
+        <Table
+          columns={columns}
+          rowKey={"_id"}
+          dataSource={ordersResponse?.data || []}
+          scroll={{ x: true }}
+          pagination={{ 
+            pageSize: 10,
+            showSizeChanger: false,
+            responsive: true
+          }}
+        />
       </Space>
-    </>
-  );
-};
+    </div>
+  </>
+);
+}
 export default Orders;

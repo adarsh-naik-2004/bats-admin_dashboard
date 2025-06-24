@@ -236,8 +236,8 @@ function HomePage() {
   };
 
   return (
-    <div style={{ padding: '16px' }}>
-      <Title level={4} style={{ marginBottom: '24px' }}>
+    <div style={{ padding: '12px' }}>
+      <Title level={4} style={{ marginBottom: '16px' }}>
         Welcome, {user?.firstName} {user?.role === "manager" && `(${user?.store?.name || "Your Store"})`} 🏏
       </Title>
       
@@ -249,6 +249,7 @@ function HomePage() {
                 title={<CardTitle title="Total orders" PrefixIcon={Orders} />}
                 variant="borderless"
                 loading={loading}
+                bodyStyle={{ padding: '16px' }}
               >
                 <Statistic value={totalOrders} />
               </Card>
@@ -259,6 +260,7 @@ function HomePage() {
                 title={<CardTitle title="Total sale" PrefixIcon={Graph} />}
                 variant="borderless"
                 loading={loading}
+                bodyStyle={{ padding: '16px' }}
               >
                 <Statistic 
                   value={totalSales} 
@@ -277,6 +279,7 @@ function HomePage() {
                 title={<CardTitle title="Total stores" PrefixIcon={Graph} />}
                 variant="borderless"
                 loading={loading}
+                bodyStyle={{ padding: '16px' }}
               >
                 <Statistic value={totalStores} />
               </Card>
@@ -286,6 +289,7 @@ function HomePage() {
                 title={<CardTitle title="Total categories" PrefixIcon={Graph} />}
                 variant="borderless"
                 loading={loading}
+                bodyStyle={{ padding: '16px' }}
               >
                 <Statistic value={totalCategories} />
               </Card>
@@ -295,6 +299,7 @@ function HomePage() {
                 title={<CardTitle title="Total products" PrefixIcon={Graph} />}
                 variant="borderless"
                 loading={loading}
+                bodyStyle={{ padding: '16px' }}
               >
                 <Statistic value={totalProducts} />
               </Card>
@@ -304,6 +309,7 @@ function HomePage() {
                 title={<CardTitle title="Total promos" PrefixIcon={Graph} />}
                 variant="borderless"
                 loading={loading}
+                bodyStyle={{ padding: '16px' }}
               >
                 <Statistic value={totalPromos} />
               </Card>
@@ -319,6 +325,7 @@ function HomePage() {
               title={<CardTitle title="User Distribution" PrefixIcon={Graph} />}
               variant="borderless"
               loading={loading}
+              bodyStyle={{ padding: '16px' }}
             >
               {userDistribution.length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
@@ -355,11 +362,12 @@ function HomePage() {
             <Card
               variant="borderless"
               title={<CardTitle title="Recent orders" PrefixIcon={Orders} />}
+              bodyStyle={{ padding: '0 16px 16px' }}
             >
               {loading ? (
-                <Spin tip="Loading orders..." />
+                <Spin tip="Loading orders..." style={{ padding: '16px', textAlign: 'center' }} />
               ) : recentOrders.length === 0 ? (
-                <Empty description="No recent orders" />
+                <Empty description="No recent orders" style={{ padding: '16px 0' }} />
               ) : (
                 <>
                   <List
@@ -377,7 +385,7 @@ function HomePage() {
                       const status: StatusKey = (order.orderStatus as StatusKey) || "received";
                       
                       return (
-                        <List.Item>
+                        <List.Item style={{ padding: '12px 0' }}>
                           <List.Item.Meta
                             title={
                               <Link to={`/orders/${order._id || ''}`}>
@@ -405,7 +413,7 @@ function HomePage() {
                       );
                     }}
                   />
-                  <div style={{ marginTop: '20px', textAlign: 'right' }}>
+                  <div style={{ marginTop: '16px', textAlign: 'right' }}>
                     <Button type="link">
                       <Link to="/orders">See all orders</Link>
                     </Button>

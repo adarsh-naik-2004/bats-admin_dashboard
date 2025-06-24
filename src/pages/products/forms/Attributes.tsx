@@ -10,19 +10,22 @@ type PricingProps = {
 const Attributes = ({ selectedCategory }: PricingProps) => {
     const { data: fetchedCategory } = useQuery<Category>({
         queryKey: ['category', selectedCategory],
-        queryFn: () => {
-            return getCategory(selectedCategory).then((res) => res.data);
-        },
+        queryFn: () => getCategory(selectedCategory).then((res) => res.data),
         staleTime: 1000 * 60 * 5, // 5 minutes
     });
 
     if (!fetchedCategory) return null;
 
     return (
-        <Card title={<Typography.Text>Attributes</Typography.Text>} bordered={false}>
-            {fetchedCategory.attributes.map((attribute) => {
-                return (
-                    <div key={attribute.name}>
+        <Card title={<Typography.Text>Attributes</Typography.Text>} bordered={false} style={{ marginTop: '1rem' }}>
+            <Row gutter={[16, 24]}>
+                {fetchedCategory.attributes.map((attribute) => (
+                    <Col
+                        key={attribute.name}
+                        xs={24}
+                        sm={24}
+                        md={attribute.widgetType === 'switch' ? 12 : 24}
+                    >
                         {attribute.widgetType === 'radio' ? (
                             <Form.Item
                                 label={attribute.name}
@@ -33,33 +36,29 @@ const Attributes = ({ selectedCategory }: PricingProps) => {
                                         required: true,
                                         message: `${attribute.name} is required`,
                                     },
-                                ]}>
-                                <Radio.Group>
-                                    {attribute.availableOptions.map((option) => {
-                                        return (
-                                            <Radio.Button value={option} key={option}>
-                                                {option}
-                                            </Radio.Button>
-                                        );
-                                    })}
+                                ]}
+                            >
+                                <Radio.Group style={{ flexWrap: 'wrap' }}>
+                                    {attribute.availableOptions.map((option) => (
+                                        <Radio.Button key={option} value={option}>
+                                            {option}
+                                        </Radio.Button>
+                                    ))}
                                 </Radio.Group>
                             </Form.Item>
                         ) : attribute.widgetType === 'switch' ? (
-                            <Row>
-                                <Col>
-                                    <Form.Item
-                                        name={['attributes', attribute.name]}
-                                        valuePropName="checked"
-                                        label={attribute.name}
-                                        initialValue={attribute.defaultValue}>
-                                        <Switch checkedChildren="Yes" unCheckedChildren="No" />
-                                    </Form.Item>
-                                </Col>
-                            </Row>
+                            <Form.Item
+                                label={attribute.name}
+                                name={['attributes', attribute.name]}
+                                valuePropName="checked"
+                                initialValue={attribute.defaultValue}
+                            >
+                                <Switch checkedChildren="Yes" unCheckedChildren="No" />
+                            </Form.Item>
                         ) : null}
-                    </div>
-                );
-            })}
+                    </Col>
+                ))}
+            </Row>
         </Card>
     );
 };

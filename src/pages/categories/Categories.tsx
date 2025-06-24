@@ -1,26 +1,26 @@
 import { useState, useEffect } from "react";
-import { 
-  Button, 
-  Card, 
-  Form, 
-  Input, 
-  Modal, 
-  Space, 
-  Table, 
-  Select, 
-  Typography, 
-  Row, 
+import {
+  Button,
+  Card,
+  Form,
+  Input,
+  Modal,
+  Space,
+  Table,
+  Select,
+  Typography,
+  Row,
   Col,
   Tag,
-  Divider
+  Divider,
 } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
-import { 
-  createCategory, 
-  deleteCategory, 
-  getCategories, 
-  updateCategory 
+import {
+  createCategory,
+  deleteCategory,
+  getCategories,
+  updateCategory,
 } from "../../http/api";
 import { Category, PriceConfiguration, Attribute } from "../../types";
 
@@ -49,25 +49,22 @@ export default function Categories() {
   }
 
   const handleSubmit = async (values: CategoryFormValues) => {
-  // Create a payload that matches the Category type
-  const payload: Category = {
-    _id: editingCategory?._id || '', // Provide a fallback for new categories
-    name: values.name,
-    priceConfiguration: priceConfigs,
-    attributes: attributes
-  };
+    // Create a payload that matches the Category type
+    const payload: Category = {
+      _id: editingCategory?._id || "", // Provide a fallback for new categories
+      name: values.name,
+      priceConfiguration: priceConfigs,
+      attributes: attributes,
+    };
 
-  if (editingCategory) {
-    await updateCategory(
-      payload,
-      editingCategory._id!
-    );
-  } else {
-    await createCategory(payload);
-  }
-  closeModal();
-  loadCategories();
-};
+    if (editingCategory) {
+      await updateCategory(payload, editingCategory._id!);
+    } else {
+      await createCategory(payload);
+    }
+    closeModal();
+    loadCategories();
+  };
 
   const handleDelete = async (id: string) => {
     await deleteCategory(id);
@@ -95,7 +92,7 @@ export default function Categories() {
     const configName = `config_${Object.keys(priceConfigs).length + 1}`;
     newConfigs[configName] = {
       priceType: "base",
-      availableOptions: []
+      availableOptions: [],
     };
     setPriceConfigs(newConfigs);
   };
@@ -113,7 +110,7 @@ export default function Categories() {
   ) => {
     const newConfigs = { ...priceConfigs };
     if (!newConfigs[name]) return;
-    
+
     if (field === "name") {
       // Rename the configuration
       if (value !== name) {
@@ -125,45 +122,49 @@ export default function Categories() {
       if (value === "base" || value === "additional") {
         newConfigs[name] = {
           ...newConfigs[name],
-          priceType: value as "base" | "additional"
+          priceType: value as "base" | "additional",
         };
       }
     }
-    
+
     setPriceConfigs(newConfigs);
   };
 
   const addPriceOption = (configName: string) => {
     const newConfigs = { ...priceConfigs };
     if (!newConfigs[configName]) return;
-    
+
     newConfigs[configName].availableOptions = [
       ...newConfigs[configName].availableOptions,
-      `Option ${newConfigs[configName].availableOptions.length + 1}`
+      `Option ${newConfigs[configName].availableOptions.length + 1}`,
     ];
-    
+
     setPriceConfigs(newConfigs);
   };
 
   const removePriceOption = (configName: string, optionIndex: number) => {
     const newConfigs = { ...priceConfigs };
     if (!newConfigs[configName]) return;
-    
-    newConfigs[configName].availableOptions = 
-      newConfigs[configName].availableOptions.filter((_, i) => i !== optionIndex);
-    
+
+    newConfigs[configName].availableOptions = newConfigs[
+      configName
+    ].availableOptions.filter((_, i) => i !== optionIndex);
+
     setPriceConfigs(newConfigs);
   };
 
-  const updatePriceOption = (configName: string, optionIndex: number, value: string) => {
+  const updatePriceOption = (
+    configName: string,
+    optionIndex: number,
+    value: string
+  ) => {
     const newConfigs = { ...priceConfigs };
     if (!newConfigs[configName]) return;
-    
-    newConfigs[configName].availableOptions = 
-      newConfigs[configName].availableOptions.map((opt, i) => 
-        i === optionIndex ? value : opt
-      );
-    
+
+    newConfigs[configName].availableOptions = newConfigs[
+      configName
+    ].availableOptions.map((opt, i) => (i === optionIndex ? value : opt));
+
     setPriceConfigs(newConfigs);
   };
 
@@ -174,8 +175,8 @@ export default function Categories() {
         name: `attribute_${attributes.length + 1}`,
         widgetType: "radio",
         defaultValue: "",
-        availableOptions: ["Option 1", "Option 2"]
-      }
+        availableOptions: ["Option 1", "Option 2"],
+      },
     ]);
   };
 
@@ -190,87 +191,91 @@ export default function Categories() {
   ) => {
     const newAttributes = [...attributes];
     if (!newAttributes[index]) return;
-    
+
     if (field === "name") {
       newAttributes[index] = {
         ...newAttributes[index],
-        name: value as string
+        name: value as string,
       };
     } else {
       newAttributes[index] = {
         ...newAttributes[index],
-        [field]: value
+        [field]: value,
       };
     }
-    
+
     setAttributes(newAttributes);
   };
 
   const addAttributeOption = (index: number) => {
     const newAttributes = [...attributes];
     if (!newAttributes[index]) return;
-    
+
     newAttributes[index].availableOptions = [
       ...newAttributes[index].availableOptions,
-      `Option ${newAttributes[index].availableOptions.length + 1}`
+      `Option ${newAttributes[index].availableOptions.length + 1}`,
     ];
-    
+
     setAttributes(newAttributes);
   };
 
   const removeAttributeOption = (attrIndex: number, optionIndex: number) => {
     const newAttributes = [...attributes];
     if (!newAttributes[attrIndex]) return;
-    
-    newAttributes[attrIndex].availableOptions = 
-      newAttributes[attrIndex].availableOptions.filter((_, i) => i !== optionIndex);
-    
+
+    newAttributes[attrIndex].availableOptions = newAttributes[
+      attrIndex
+    ].availableOptions.filter((_, i) => i !== optionIndex);
+
     setAttributes(newAttributes);
   };
 
-  const updateAttributeOption = (attrIndex: number, optionIndex: number, value: string) => {
+  const updateAttributeOption = (
+    attrIndex: number,
+    optionIndex: number,
+    value: string
+  ) => {
     const newAttributes = [...attributes];
     if (!newAttributes[attrIndex]) return;
-    
-    newAttributes[attrIndex].availableOptions = 
-      newAttributes[attrIndex].availableOptions.map((opt, i) => 
-        i === optionIndex ? value : opt
-      );
-    
+
+    newAttributes[attrIndex].availableOptions = newAttributes[
+      attrIndex
+    ].availableOptions.map((opt, i) => (i === optionIndex ? value : opt));
+
     setAttributes(newAttributes);
   };
 
   const columns = [
     {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
     },
     {
-      title: 'Price Configurations',
-      key: 'priceConfiguration',
+      title: "Price Configurations",
+      key: "priceConfiguration",
       render: (record: Category) => (
         <div>
-          {Object.keys(record.priceConfiguration || {}).map(name => (
+          {Object.keys(record.priceConfiguration || {}).map((name) => (
             <Tag key={name}>{name}</Tag>
           ))}
         </div>
       ),
     },
     {
-      title: 'Attributes',
-      key: 'attributes',
+      title: "Attributes",
+      key: "attributes",
       render: (record: Category) => (
         <div>
-          {(record.attributes || []).map(attr => (
+          {(record.attributes || []).map((attr) => (
             <Tag key={attr.name}>{attr.name}</Tag>
           ))}
         </div>
       ),
     },
     {
-      title: 'Actions',
-      key: 'actions',
+      title: "Actions",
+      key: "actions",
       render: (_: unknown, record: Category) => (
         <Space>
           <Button onClick={() => openEditModal(record)}>Edit</Button>
@@ -283,124 +288,139 @@ export default function Categories() {
   ];
 
   return (
-    <Card 
-      title="Categories" 
-      extra={
-        <Button type="primary" onClick={() => setIsModalOpen(true)}>
-          Add Category
-        </Button>
-      }
-    >
-      <Table 
-        columns={columns} 
-        dataSource={categories} 
-        rowKey="_id" 
-        expandable={{
-          expandedRowRender: (record) => (
-            <div>
-              <Title level={5}>Price Configurations:</Title>
-              {Object.entries(record.priceConfiguration || {}).map(([name, config]) => (
-                <div key={name} style={{ marginBottom: 16 }}>
-                  <strong>{name}</strong> ({config.priceType})
-                  <div>
-                    Options: {config.availableOptions.join(", ")}
+    <div className="page-container">
+      <Card
+        title="Categories"
+        extra={
+          <Button type="primary" onClick={() => setIsModalOpen(true)}>
+            Add Category
+          </Button>
+        }
+      >
+        <Table
+          columns={columns}
+          dataSource={categories}
+          rowKey="_id"
+          scroll={{ x: true }}
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: false,
+            responsive: true,
+          }}
+          expandable={{
+            expandedRowRender: (record) => (
+              <div>
+                <Title level={5}>Price Configurations:</Title>
+                {Object.entries(record.priceConfiguration || {}).map(
+                  ([name, config]) => (
+                    <div key={name} style={{ marginBottom: 16 }}>
+                      <strong>{name}</strong> ({config.priceType})
+                      <div>Options: {config.availableOptions.join(", ")}</div>
+                    </div>
+                  )
+                )}
+
+                <Title level={5}>Attributes:</Title>
+                {(record.attributes || []).map((attr) => (
+                  <div key={attr.name} style={{ marginBottom: 16 }}>
+                    <strong>{attr.name}</strong> ({attr.widgetType})
+                    <div>Default: {attr.defaultValue}</div>
+                    <div>Options: {attr.availableOptions.join(", ")}</div>
                   </div>
-                </div>
-              ))}
-              
-              <Title level={5}>Attributes:</Title>
-              {(record.attributes || []).map(attr => (
-                <div key={attr.name} style={{ marginBottom: 16 }}>
-                  <strong>{attr.name}</strong> ({attr.widgetType})
-                  <div>
-                    Default: {attr.defaultValue}
-                  </div>
-                  <div>
-                    Options: {attr.availableOptions.join(", ")}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )
-        }}
-      />
-      
+                ))}
+              </div>
+            ),
+          }}
+        />
+      </Card>
+
       <Modal
         title={editingCategory ? "Edit Category" : "Create Category"}
         open={isModalOpen}
         onCancel={closeModal}
         onOk={() => form.submit()}
-        width={800}
+        width="90%"
+        style={{ maxWidth: 800 }}
       >
-        <Form 
-          form={form} 
-          layout="vertical" 
+        <Form
+          form={form}
+          layout="vertical"
           onFinish={handleSubmit}
-          initialValues={{
-            name: ""
-          }}
+          initialValues={{ name: "" }}
         >
           <Form.Item
             label="Category Name"
             name="name"
-            rules={[{ required: true, message: 'Please enter category name' }]}
+            rules={[{ required: true, message: "Please enter category name" }]}
           >
             <Input placeholder="e.g., Cricket Bats, Protective Gear" />
           </Form.Item>
-          
+
           <Divider orientation="left">Price Configurations</Divider>
           <div style={{ marginBottom: 16 }}>
-            <Button 
-              type="dashed" 
-              onClick={addPriceConfig} 
+            <Button
+              type="dashed"
+              onClick={addPriceConfig}
               icon={<PlusOutlined />}
+              block
             >
               Add Price Configuration
             </Button>
           </div>
-          
+
           {Object.entries(priceConfigs).map(([name, config]) => (
-            <Card 
+            <Card
               key={name}
               title={name}
               style={{ marginBottom: 16 }}
               extra={
-                <Button 
-                  type="link" 
-                  danger 
+                <Button
+                  type="link"
+                  danger
                   icon={<MinusCircleOutlined />}
                   onClick={() => removePriceConfig(name)}
                 />
               }
             >
-              <Row gutter={16}>
-                <Col span={12}>
+              <Row gutter={[16, 16]}>
+                <Col xs={24} sm={12}>
                   <Form.Item label="Configuration Name">
                     <Input
                       value={name}
-                      onChange={(e) => updatePriceConfig(name, "name", e.target.value)}
+                      onChange={(e) =>
+                        updatePriceConfig(name, "name", e.target.value)
+                      }
                     />
                   </Form.Item>
                 </Col>
-                <Col span={12}>
+                <Col xs={24} sm={12}>
                   <Form.Item label="Price Type">
                     <Select
                       value={config.priceType}
-                      onChange={(value) => updatePriceConfig(name, "priceType", value)}
+                      onChange={(value) =>
+                        updatePriceConfig(name, "priceType", value)
+                      }
                     >
                       <Select.Option value="base">Base Price</Select.Option>
-                      <Select.Option value="additional">Additional Price</Select.Option>
+                      <Select.Option value="additional">
+                        Additional Price
+                      </Select.Option>
                     </Select>
                   </Form.Item>
                 </Col>
               </Row>
-              
+
               <Title level={5}>Options:</Title>
               {config.availableOptions.map((option, index) => (
-                <div key={index} style={{ marginBottom: 8, display: "flex", gap: 8 }}>
+                <div
+                  key={index}
+                  style={{ marginBottom: 8, display: "flex", gap: 8 }}
+                >
                   <Input
                     value={option}
-                    onChange={(e) => updatePriceOption(name, index, e.target.value)}
+                    onChange={(e) =>
+                      updatePriceOption(name, index, e.target.value)
+                    }
                   />
                   <Button
                     danger
@@ -409,71 +429,84 @@ export default function Categories() {
                   />
                 </div>
               ))}
-              
-              <Button 
-                type="dashed" 
-                onClick={() => addPriceOption(name)} 
+
+              <Button
+                type="dashed"
+                onClick={() => addPriceOption(name)}
                 icon={<PlusOutlined />}
                 style={{ marginTop: 8 }}
+                block
               >
                 Add Option
               </Button>
             </Card>
           ))}
-          
+
           <Divider orientation="left">Attributes</Divider>
           <div style={{ marginBottom: 16 }}>
-            <Button 
-              type="dashed" 
-              onClick={addAttribute} 
+            <Button
+              type="dashed"
+              onClick={addAttribute}
               icon={<PlusOutlined />}
+              block
             >
               Add Attribute
             </Button>
           </div>
-          
+
           {attributes.map((attr, index) => (
-            <Card 
+            <Card
               key={index}
               title={attr.name}
               style={{ marginBottom: 16 }}
               extra={
-                <Button 
-                  type="link" 
-                  danger 
+                <Button
+                  type="link"
+                  danger
                   icon={<MinusCircleOutlined />}
                   onClick={() => removeAttribute(index)}
                 />
               }
             >
-              <Row gutter={16}>
-                <Col span={12}>
+              <Row gutter={[16, 16]}>
+                <Col xs={24} sm={12}>
                   <Form.Item label="Attribute Name">
                     <Input
                       value={attr.name}
-                      onChange={(e) => updateAttribute(index, "name", e.target.value)}
+                      onChange={(e) =>
+                        updateAttribute(index, "name", e.target.value)
+                      }
                     />
                   </Form.Item>
                 </Col>
-                <Col span={12}>
+                <Col xs={24} sm={12}>
                   <Form.Item label="Widget Type">
                     <Select
                       value={attr.widgetType}
-                      onChange={(value) => updateAttribute(index, "widgetType", value)}
+                      onChange={(value) =>
+                        updateAttribute(index, "widgetType", value)
+                      }
                     >
                       <Select.Option value="radio">Radio Buttons</Select.Option>
-                      <Select.Option value="switch">Toggle Switch</Select.Option>
+                      <Select.Option value="switch">
+                        Toggle Switch
+                      </Select.Option>
                     </Select>
                   </Form.Item>
                 </Col>
               </Row>
-              
+
               <Title level={5}>Options:</Title>
               {attr.availableOptions.map((option, optIndex) => (
-                <div key={optIndex} style={{ marginBottom: 8, display: "flex", gap: 8 }}>
+                <div
+                  key={optIndex}
+                  style={{ marginBottom: 8, display: "flex", gap: 8 }}
+                >
                   <Input
                     value={option}
-                    onChange={(e) => updateAttributeOption(index, optIndex, e.target.value)}
+                    onChange={(e) =>
+                      updateAttributeOption(index, optIndex, e.target.value)
+                    }
                   />
                   <Button
                     danger
@@ -482,23 +515,26 @@ export default function Categories() {
                   />
                 </div>
               ))}
-              
-              <Button 
-                type="dashed" 
-                onClick={() => addAttributeOption(index)} 
+
+              <Button
+                type="dashed"
+                onClick={() => addAttributeOption(index)}
                 icon={<PlusOutlined />}
                 style={{ marginTop: 8 }}
+                block
               >
                 Add Option
               </Button>
-              
+
               {attr.availableOptions.length > 0 && (
                 <Form.Item label="Default Value" style={{ marginTop: 16 }}>
                   <Select
                     value={attr.defaultValue}
-                    onChange={(value) => updateAttribute(index, "defaultValue", value)}
+                    onChange={(value) =>
+                      updateAttribute(index, "defaultValue", value)
+                    }
                   >
-                    {attr.availableOptions.map(option => (
+                    {attr.availableOptions.map((option) => (
                       <Select.Option key={option} value={option}>
                         {option}
                       </Select.Option>
@@ -508,14 +544,14 @@ export default function Categories() {
               )}
             </Card>
           ))}
-          
+
           <Form.Item style={{ marginTop: 24 }}>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" block>
               {editingCategory ? "Update Category" : "Create Category"}
             </Button>
           </Form.Item>
         </Form>
       </Modal>
-    </Card>
+    </div>
   );
 }

@@ -174,7 +174,7 @@ const Users = () => {
     }
 
     return (
-        <>
+        <div style={{ padding: '16px' }}>
             <Modal
                 title="Confirm Delete"
                 open={showDeleteConfirm}
@@ -187,7 +187,7 @@ const Users = () => {
             </Modal>
 
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                <Flex justify="space-between">
+                <Flex justify="space-between" align="center" wrap="wrap" gap={8}>
                     <Breadcrumb
                         separator={<RightOutlined />}
                         items={[{ title: <Link to="/">Dashboard</Link> }, { title: 'Users' }]}
@@ -246,13 +246,24 @@ const Users = () => {
                         showTotal: (total: number, range: number[]) => {
                             return `Showing ${range[0]}-${range[1]} of ${total} items`;
                         },
+                        responsive: true,
+                        showSizeChanger: true,
+                        pageSizeOptions: ['5', '10', '20', '50'],
+                        onShowSizeChange: (_current, size) => {
+                            setQueryParams((prev) => ({
+                                ...prev,
+                                perPage: size,
+                                currentPage: 1,
+                            }));
+                        },
                     }}
+                    scroll={{ x: true }}
                 />
 
                 <Drawer
                     title={currentEditingUser ? 'Edit User' : 'Add User'}
-                    width={720}
-                    styles={{ body: { backgroundColor: colorBgLayout } }}
+                    width={window.innerWidth > 720 ? 720 : '100%'}
+                    styles={{ body: { backgroundColor: colorBgLayout, padding: '16px' } }}
                     destroyOnClose={true}
                     open={drawerOpen}
                     onClose={() => {
@@ -279,7 +290,7 @@ const Users = () => {
                     </Form>
                 </Drawer>
             </Space>
-        </>
+        </div>
     );
 };
 

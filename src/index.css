@@ -18,3 +18,48 @@
     transition: background-color var(--transition-time) ease, color var(--transition-time) ease;
   }
   
+/* Custom spinner animation */
+@keyframes spinner {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.custom-spin {
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+
+.spinner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.spinner-sector {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 4px solid transparent;
+  mix-blend-mode: overlay;
+  animation: spinner 1.2s linear infinite;
+}
+
+.spinner-sector-top {
+  border-top-color: #1890ff;
+}
+
+.spinner-sector-bottom {
+  border-bottom-color: #52c41a;
+}
+
+.page-container {
+  padding: 24px;
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 16px;
+  }
+}

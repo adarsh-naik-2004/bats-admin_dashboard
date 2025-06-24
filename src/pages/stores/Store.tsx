@@ -88,13 +88,9 @@ const Stores = () => {
         setDrawerOpen(false);
     };
 
-    
-
     if (user?.role !== 'admin') {
         return <Navigate to="/" replace={true} />;
     }
-
-
 
     const columns = [
         {
@@ -128,12 +124,10 @@ const Stores = () => {
         },
     ];
 
-
-
     return (
-        <>
+        <div style={{ padding: '16px' }}>
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                <Flex justify="space-between">
+                <Flex justify="space-between" align="center" wrap="wrap" gap={8}>
                     <Breadcrumb
                         separator={<RightOutlined />}
                         items={[{ title: <Link to="/">Dashboard</Link> }, { title: 'Stores' }]}
@@ -175,13 +169,24 @@ const Stores = () => {
                         showTotal: (total: number, range: number[]) => {
                             return `Showing ${range[0]}-${range[1]} of ${total} items`;
                         },
+                        responsive: true,
+                        showSizeChanger: true,
+                        pageSizeOptions: ['5', '10', '20', '50'],
+                        onShowSizeChange: (_current, size) => {
+                            setQueryParams((prev) => ({
+                                ...prev,
+                                perPage: size,
+                                currentPage: 1,
+                            }));
+                        },
                     }}
+                    scroll={{ x: true }}
                 />
 
                 <Drawer
                     title={currentEditingStore ? 'Edit Store' : 'Create Store'}
-                    styles={{ body: { backgroundColor: colorBgLayout } }}
-                    width={720}
+                    styles={{ body: { backgroundColor: colorBgLayout, padding: '16px' } }}
+                    width={window.innerWidth > 720 ? 720 : '100%'}
                     destroyOnClose={true}
                     open={drawerOpen}
                     onClose={() => {
@@ -207,8 +212,8 @@ const Stores = () => {
                         <StoreForm isEditMode={!!currentEditingStore} />
                     </Form>
                 </Drawer>
-                </Space>
-        </>
+            </Space>
+        </div>
     );
 };
 
