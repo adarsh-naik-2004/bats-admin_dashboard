@@ -280,7 +280,7 @@ function HomePage() {
                         fill="#8884d8"
                         dataKey="value"
                       >
-                        {userDistribution.map((entry, index) => (
+                        {userDistribution.map((_,index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
