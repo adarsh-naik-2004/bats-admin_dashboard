@@ -1,69 +1,75 @@
-import { Form, message, Space, Typography, Upload, UploadProps } from 'antd';
+import { message, Upload, UploadProps } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 
-const ProductImage = ({ initialImage }: { initialImage: string }) => {
-    const [messageApi, contextHolder] = message.useMessage();
-    const [imageUrl, setImageUrl] = useState<string | null>(initialImage);
+interface ProductImageProps {
+  value?: string | File;
+  onChange?: (value: string | File) => void;
+}
 
-    const uploaderConfig: UploadProps = {
-        name: 'file',
-        multiple: false,
-        showUploadList: false,
-        beforeUpload: (file) => {
-            const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-            if (!isJpgOrPng) {
-                console.error('You can only upload JPG/PNG file!');
-                messageApi.error('You can only upload JPG/PNG file!');
-            }
+const ProductImage = ({ value, onChange }: ProductImageProps) => {
+  const [messageApi, contextHolder] = message.useMessage();
+  const [imageUrl, setImageUrl] = useState<string | null>(
+    typeof value === 'string' ? value : null
+  );
 
-            setImageUrl(URL.createObjectURL(file));
-            return false; // Prevent automatic upload
-        },
-    };
+  const uploaderConfig: UploadProps = {
+    name: 'file',
+    multiple: false,
+    showUploadList: false,
+    beforeUpload: (file) => {
+      const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+      if (!isJpgOrPng) {
+        messageApi.error('You can only upload JPG/PNG file!');
+        return false;
+      }
 
-    return (
-        <Form.Item
-            label="Product Image"
-            name="image"
-            rules={[
-                {
-                    required: true,
-                    message: 'Please upload a product image',
-                },
-            ]}
-            style={{ marginBottom: '1rem' }}
-        >
-            {contextHolder}
-            <Upload
-                {...uploaderConfig}
-                listType="picture-card"
-                className="responsive-upload"
-                style={{
-                    maxWidth: 200,
-                    width: '100%',
-                }}
-            >
-                {imageUrl ? (
-                    <img
-                        src={imageUrl}
-                        alt="product"
-                        style={{
-                            width: '100%',
-                            height: 'auto',
-                            borderRadius: 8,
-                            objectFit: 'cover',
-                        }}
-                    />
-                ) : (
-                    <Space direction="vertical" align="center">
-                        <PlusOutlined style={{ fontSize: 20 }} />
-                        <Typography.Text style={{ fontSize: 14 }}>Upload</Typography.Text>
-                    </Space>
-                )}
-            </Upload>
-        </Form.Item>
-    );
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImageUrl(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      if (onChange) {
+        onChange(file);
+      }
+
+      return false;
+    },
+  };
+
+  return (
+    <>
+      {contextHolder}
+      <Upload
+        {...uploaderConfig}
+        listType="picture-card"
+        className="responsive-upload"
+        style={{
+          maxWidth: 200,
+          width: '100%',
+        }}
+      >
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt="product"
+            style={{
+              width: '100%',
+              height: 'auto',
+              borderRadius: 8,
+              objectFit: 'cover',
+            }}
+          />
+        ) : (
+          <div>
+            <PlusOutlined style={{ fontSize: 20 }} />
+            <div style={{ fontSize: 14 }}>Upload</div>
+          </div>
+        )}
+      </Upload>
+    </>
+  );
 };
 
 export default ProductImage;

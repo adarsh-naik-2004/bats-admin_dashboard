@@ -211,49 +211,53 @@ const Products = () => {
   });
 
   const onHandleSubmit = async () => {
-    await form.validateFields();
+    try {
+      await form.validateFields();
 
-    const priceConfiguration = form.getFieldValue("priceConfiguration");
-    const pricing = Object.entries(priceConfiguration).reduce(
-      (acc, [key, value]) => {
-        const parsedKey = JSON.parse(key);
-        return {
-          ...acc,
-          [parsedKey.configurationKey]: {
-            priceType: parsedKey.priceType,
-            availableOptions: value,
-          },
-        };
-      },
-      {}
-    );
+      const priceConfiguration = form.getFieldValue("priceConfiguration");
+      const pricing = Object.entries(priceConfiguration).reduce(
+        (acc, [key, value]) => {
+          const parsedKey = JSON.parse(key);
+          return {
+            ...acc,
+            [parsedKey.configurationKey]: {
+              priceType: parsedKey.priceType,
+              availableOptions: value,
+            },
+          };
+        },
+        {}
+      );
 
-    const categoryId = form.getFieldValue("categoryId");
+      const categoryId = form.getFieldValue("categoryId");
 
-    const attributes = Object.entries(form.getFieldValue("attributes")).map(
-      ([key, value]) => {
-        return {
-          name: key,
-          value: value,
-        };
-      }
-    );
+      const attributes = Object.entries(form.getFieldValue("attributes")).map(
+        ([key, value]) => {
+          return {
+            name: key,
+            value: value,
+          };
+        }
+      );
 
-    const postData = {
-      ...form.getFieldsValue(),
-      storeId:
-        user!.role === "manager"
-          ? user?.store?.id
-          : form.getFieldValue("storeId"),
-      isPublish: form.getFieldValue("isPublish") ? true : false,
-      image: form.getFieldValue("image"),
-      categoryId,
-      priceConfiguration: pricing,
-      attributes,
-    };
+      const postData = {
+        ...form.getFieldsValue(),
+        storeId:
+          user!.role === "manager"
+            ? user?.store?.id
+            : form.getFieldValue("storeId"),
+        isPublish: form.getFieldValue("isPublish") ? true : false,
+        categoryId,
+        priceConfiguration: pricing,
+        attributes,
+      };
 
-    const formData = makeFormData(postData);
-    await productMutate(formData);
+      const formData = makeFormData(postData);
+      await productMutate(formData);
+    } catch (error) {
+      console.error("Form validation failed:", error);
+      messageApi.error("Please fill all required fields correctly");
+    }
   };
 
   const { mutate: deleteProductMutation } = useMutation({
@@ -413,7 +417,7 @@ const Products = () => {
             }
           >
             <Form layout="vertical" form={form}>
-              <ProductForm form={form} />
+              <ProductForm/>
             </Form>
           </Drawer>
         </Space>
