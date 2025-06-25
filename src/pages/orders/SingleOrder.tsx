@@ -164,59 +164,53 @@ const SingleOrder = () => {
             >
               <Space direction="vertical" style={{ width: "100%" }}>
                 <Flex style={{ flexDirection: "column" }}>
-                  Add commentMore actions
-                  <Typography.Text type="secondary">Name</Typography.Text>
-                  <Typography.Text>
-                    {order.customerId.firstName +
-                      " " +
-                      order.customerId.lastName}
-                  </Typography.Text>
-                </Flex>
+                <Typography.Text type="secondary">Name</Typography.Text>
+                <Typography.Text>
+                  {order.customerId?.firstName + " " + order.customerId?.lastName}
+                </Typography.Text>
+              </Flex>
 
+              <Flex style={{ flexDirection: "column" }}>
+                <Typography.Text type="secondary">Address</Typography.Text>
+                <Typography.Text>{order.address}</Typography.Text>
+              </Flex>
+
+              <Flex style={{ flexDirection: "column" }}>
+                <Typography.Text type="secondary">
+                  Payment Method
+                </Typography.Text>
+                <Typography.Text>
+                  {order.paymentMode.toUpperCase()}
+                </Typography.Text>
+              </Flex>
+
+              <Flex style={{ flexDirection: "column" }}>
+                <Typography.Text type="secondary">
+                  Payment Status
+                </Typography.Text>
+                <Typography.Text>
+                  {capitalizeFirst(order.paymentStatus)}
+                </Typography.Text>
+              </Flex>
+
+              <Flex style={{ flexDirection: "column" }}>
+                <Typography.Text type="secondary">Order Amount</Typography.Text>
+                <Typography.Text>₹{order.total}</Typography.Text>
+              </Flex>
+
+              <Flex style={{ flexDirection: "column" }}>
+                <Typography.Text type="secondary">Order Time</Typography.Text>
+                <Typography.Text>
+                  {format(new Date(order.createdAt), "dd/MM/yyyy HH:mm")}
+                </Typography.Text>
+              </Flex>
+
+              {order.comment && (
                 <Flex style={{ flexDirection: "column" }}>
-                  <Typography.Text type="secondary">Address</Typography.Text>
-                  <Typography.Text>{order.address}</Typography.Text>
+                  <Typography.Text type="secondary">Comment</Typography.Text>
+                  <Typography.Text>{order.comment}</Typography.Text>
                 </Flex>
-
-                <Flex style={{ flexDirection: "column" }}>
-                  <Typography.Text type="secondary">
-                    Payment Method
-                  </Typography.Text>
-                  <Typography.Text>
-                    {order.paymentMode.toUpperCase()}
-                  </Typography.Text>
-                </Flex>
-
-                <Flex style={{ flexDirection: "column" }}>
-                  <Typography.Text type="secondary">
-                    Payment Status
-                  </Typography.Text>
-                  <Typography.Text>
-                    {capitalizeFirst(order.paymentStatus)}
-                  </Typography.Text>
-                </Flex>
-
-                <Flex style={{ flexDirection: "column" }}>
-                  <Typography.Text type="secondary">
-                    Order Amount
-                  </Typography.Text>
-                  <Typography.Text>₹{order.total}</Typography.Text>
-                </Flex>
-
-                <Flex style={{ flexDirection: "column" }}>
-                  <Typography.Text type="secondary">Order Time</Typography.Text>
-                  <Typography.Text>
-                    {format(new Date(order.createdAt), "dd/MM/yyyy HH:mm")}
-                  </Typography.Text>
-                </Flex>
-
-                {order.comment && (
-                  <Flex style={{ flexDirection: "column" }}>
-                    Add commentMore actions
-                    <Typography.Text type="secondary">Comment</Typography.Text>
-                    <Typography.Text>{order.comment}</Typography.Text>
-                  </Flex>
-                )}
+              )}
               </Space>
             </Card>
           </Col>
