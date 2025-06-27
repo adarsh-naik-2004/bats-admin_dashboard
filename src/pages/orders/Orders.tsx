@@ -1,7 +1,7 @@
 import { Breadcrumb, Flex, message, Space, Table, Tag, Typography } from "antd";
 import { RightOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import { Order, OrderEvents, PaymentMode, PaymentStatus } from "../../types";
+import { Order } from "../../types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getOrders } from "../../http/api";
 import { format } from "date-fns";
@@ -107,23 +107,27 @@ const Orders = () => {
   const storeId = user?.store?.id;
 
   React.useEffect(() => {
-    if (!storeId) return;
+    if (!user) return;
 
-    socket.emit("join", { storeId });
+    // Join appropriate rooms based on user role
+    if (user.role === "admin") {
+      console.log("Admin joining admin room");
+      socket.emit("join-admin");
+    } else if (storeId) {
+      console.log(`Manager joining store room: ${storeId}`);
+      socket.emit("join-store", { storeId });
+    }
 
-    socket.on("join", (data) => {
-      console.log("User joined in: ", data.roomId);
+    socket.on("join-ack", (data) => {
+      console.log("Joined room:", data.roomId);
     });
 
     socket.on("order-update", (data) => {
-      if (
-        (data.event_type === OrderEvents.ORDER_CREATE &&
-          data.data.paymentMode === PaymentMode.CASH) ||
-        (data.event_type === OrderEvents.PAYMENT_STATUS_UPDATE &&
-          data.data.paymentStatus === PaymentStatus.PAID &&
-          data.data.paymentMode === PaymentMode.CARD)
-      ) {
-        queryClient.setQueryData(["orders", storeId], (old: Order[]) => [
+      console.log("Received order update:", data);
+
+      // Only process if user is admin or store matches
+      if (user.role === "admin" || data.data.storeId === storeId) {
+        queryClient.setQueryData(["orders", storeId], (old: Order[] = []) => [
           data.data,
           ...old,
         ]);
@@ -132,54 +136,55 @@ const Orders = () => {
     });
 
     return () => {
-      socket.off("join");
+      socket.off("join-ack");
       socket.off("order-update");
-      socket.emit("leave", { storeId });
     };
-  }, [storeId, queryClient, messageApi]);
+  }, [storeId, queryClient, messageApi, user]);
 
   const { data: ordersResponse } = useQuery({
-    queryKey: ["orders", storeId],
+    queryKey: ["orders", user?.role, storeId],
     queryFn: () => {
-      if (!storeId) return Promise.resolve({ data: [] });
-      const queryString = new URLSearchParams({
-        storeId: String(storeId),
+      const queryParams = new URLSearchParams({
         page: "1",
         limit: "1000",
-      }).toString();
-      return getOrders(queryString).then((res) => res.data);
+      });
+      if (user?.role === "manager" && storeId) {
+        queryParams.append("storeId", String(storeId));
+      }
+
+      return getOrders(queryParams.toString()).then((res) => res.data);
     },
-    enabled: !!storeId,
+    enabled: !!user,
   });
 
   return (
-  <>
-    {contextHolder}
-    <div className="page-container">
-      <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        <Flex justify="space-between" align="center" wrap="wrap" gap="small">
-          <Breadcrumb
-            separator={<RightOutlined />}
-            items={[
-              { title: <Link to="/">Dashboard</Link> },
-              { title: "Orders" },
-            ]}
+    <>
+      {contextHolder}
+      <div className="page-container">
+        <Space direction="vertical" size="large" style={{ width: "100%" }}>
+          <Flex justify="space-between" align="center" wrap="wrap" gap="small">
+            <Breadcrumb
+              separator={<RightOutlined />}
+              items={[
+                { title: <Link to="/">Dashboard</Link> },
+                { title: "Orders" },
+              ]}
+            />
+          </Flex>
+          <Table
+            columns={columns}
+            rowKey={"_id"}
+            dataSource={ordersResponse?.data || []}
+            scroll={{ x: true }}
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: false,
+              responsive: true,
+            }}
           />
-        </Flex>
-        <Table
-          columns={columns}
-          rowKey={"_id"}
-          dataSource={ordersResponse?.data || []}
-          scroll={{ x: true }}
-          pagination={{ 
-            pageSize: 10,
-            showSizeChanger: false,
-            responsive: true
-          }}
-        />
-      </Space>
-    </div>
-  </>
-);
-}
+        </Space>
+      </div>
+    </>
+  );
+};
 export default Orders;
